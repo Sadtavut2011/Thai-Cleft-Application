@@ -1,0 +1,12 @@
+// Patient-66-2232.tsx content placeholder - I'll just write it as requested
+import svgPaths from "../../imports/svg-ihzb9akakb";
+
+function Component() {
+  return (
+    <div className="absolute h-[14px] left-0 top-0 w-[35px]" data-name="9:41">
+      <div className="absolute flex flex-col font-['SF_Pro:Semibold',sans-serif] font-[590] inset-0 justify-center leading-[0] overflow-ellipsis overflow-hidden text-[17px] text-black text-center text-nowrap tracking-[-0.5px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <p className="leading-[14px] whitespace-pre">9:41</p>
+      </div>
+    </div>
+  );
+}
