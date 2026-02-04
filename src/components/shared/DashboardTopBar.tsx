@@ -5,8 +5,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useRole, Role } from "@/context/RoleContext";
+} from "../ui/dropdown-menu";
+import { useRole, Role } from "../../context/RoleContext";
 
 function Frame2() {
   return (

@@ -4,6 +4,7 @@ import {
   Plus, 
   ChevronRight, 
   FileText, 
+  User,
   MapPin,
   Clock,
   Wifi,
@@ -80,8 +81,8 @@ export default function MobileDashboard({ onRegisterPatient, onProfileClick, onN
                   <div className="font-bold text-xl text-[#F99C38] w-6 h-6 flex items-center justify-center">?</div>
                 </div>
                 <div>
-                  <div className="font-bold text-gray-800">ค้นพบผู้ป่วยใหม่</div>
-                  <div className="text-gray-700 text-sm">ตรวจสอบข้อมูลผู้ป่วยใหม่</div>
+                  <div className="font-bold text-gray-800 text-[18px]">ค้นพบผู้ป่วยใหม่</div>
+                  <div className="text-gray-700 text-sm text-[16px]">ตรวจสอบข้อมูลผู้ป่วยใหม่</div>
                 </div>
               </div>
               <div className="bg-[#FCA564] p-1.5 rounded-full text-white">
@@ -92,12 +93,7 @@ export default function MobileDashboard({ onRegisterPatient, onProfileClick, onN
             {/* Search Section */}
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-bold text-gray-700">ค้นหาข้อมูลผู้ป่วย</h2>
-              <button 
-                  onClick={onRegisterPatient}
-                  className="bg-[#6A5ACD] text-white text-sm px-3 py-1.5 rounded-lg flex items-center shadow-md hover:bg-[#584ab5] transition"
-              >
-                <Plus size={16} className="mr-1" /> เพิ่มผู้ป่วยใหม่
-              </button>
+
             </div>
 
             <div className="relative mb-3">
@@ -111,7 +107,10 @@ export default function MobileDashboard({ onRegisterPatient, onProfileClick, onN
               />
             </div>
 
-            <button className="w-full bg-[#5B4D9D] text-white py-2.5 rounded-xl font-bold shadow-lg mb-4 hover:bg-[#4a3e85] transition">
+            <button 
+              className="w-full bg-[#5B4D9D] text-white py-2.5 rounded-xl font-bold shadow-lg mb-4 hover:bg-[#4a3e85] transition"
+              style={{ backgroundColor: '#5B4D9D', color: 'white' }}
+            >
               ค้นหา
             </button>
 
@@ -141,26 +140,19 @@ export default function MobileDashboard({ onRegisterPatient, onProfileClick, onN
             
             <div className="space-y-3">
               {appointments.map((appt, idx) => (
-                <div key={idx} className={`${appt.color} p-3 rounded-2xl flex justify-between items-center relative overflow-hidden`}>
-                  <div className="z-10 w-full">
-                    <div className="text-[#6A5ACD] text-sm font-semibold mb-1">{appt.date} • {appt.time}</div>
-                    <div className="text-gray-800 font-bold text-lg">{appt.type}</div>
-                    <div className="text-gray-900 font-medium text-base mb-1">{appt.name}</div>
-                    <div className="text-gray-500 text-xs mb-3">{appt.details}</div>
-                    
-                    <div className="flex space-x-2">
-                      <button className="bg-white/80 backdrop-blur text-[#5B4D9D] text-xs px-3 py-1.5 rounded-lg font-bold flex items-center shadow-sm">
-                        <Plus size={12} className="mr-1" /> เพิ่ม
-                      </button>
-                      <button className="bg-[#FFC96F] text-yellow-900 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center shadow-sm">
-                        <FileText size={12} className="mr-1" /> ดูรายละเอียด
-                      </button>
-                    </div>
+                <div key={idx} className="bg-blue-50 p-4 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm">
+                  <div className="flex flex-col gap-1">
+                      <span className="font-bold text-gray-800 text-[18px]">{appt.type} ({appt.time.split('-')[0]} น.)</span>
+                      <div className="flex items-start gap-2 text-sm text-gray-600">
+                          <User size={14} className="text-blue-500 mt-1 shrink-0" />
+                          <div className="flex flex-col">
+                              <span className="font-medium text-[16px] text-[15px]">{appt.name}</span>
+                              <span className="text-gray-500 text-[14px]">{appt.details}</span>
+                          </div>
+                      </div>
                   </div>
-                  
-                  {/* Right Arrow Circle */}
-                  <div className="bg-[#6A5ACD] p-2 rounded-full text-white shadow-lg shrink-0 z-10">
-                     <ChevronRight size={20} />
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm shrink-0">
+                      <ChevronRight size={18} />
                   </div>
                 </div>
               ))}

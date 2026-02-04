@@ -1,5 +1,5 @@
 import React from 'react';
-import svgPaths from "../../components/imports/svg-bdnktn60hj"; // Adjusted import path assuming imports is in components
+import svgPaths from "../../imports/svg-bdnktn60hj";
 import imgImage2 from "figma:asset/59a7cc50d1086cde4a964d74ca0097bd1d33ca70.png";
 import imgFrame36 from "figma:asset/d2e5b3611c651e5539da38843ee22972bf9fa81f.png";
 import imgTotalPatients from "figma:asset/6bae25ea6c15f0f26e6cf653a0b892b2961bf13d.png";

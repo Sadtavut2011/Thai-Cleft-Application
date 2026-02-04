@@ -901,139 +901,313 @@ export const PATIENTS_DATA: Patient[] = mockData.map((data: any, index: number) 
         });
     }
 
-    // Appointment History
-    const appointmentHistory = data.appointments.map((appt: any, i: number) => ({
-        id: i + 1,
-        date: new Date(appt.date_time).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }),
-        title: appt.type,
-        detail: appt.location,
-        doctor: appt.doctor_name,
-        department: 'ศัลยกรรม', // Mock
-        status: appt.status
-    }));
+    // Diagnosis Tags
+    const diagnosisTags = [diagnosis.diagnosis];
+    if (diagnosis.diagnosis.includes('Cleft Lip')) diagnosisTags.push('Cleft Lip');
+    if (diagnosis.diagnosis.includes('Cleft Palate')) diagnosisTags.push('Cleft Palate');
+    
+    // Find next appointment (using updated demo date)
+    const nextAppt = data.appointments.find((appt: any) => new Date(appt.date_time) >= new Date('2025-12-04'));
+    
+    // Use ID Card or Generated Code or Index as ID/HN
+    const hn = profile.id_card || profile.generated_code || profile.passport_no || `HN-${index + 1}`;
+    const id = `P${index + 1}`.padStart(4, '0');
 
-    // Referral History
-    const referralHistory = data.referral_homevisit.referral_history.map((ref: any, i: number) => ({
-        id: i + 1,
-        date: new Date(ref.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }),
-        from: ref.from,
-        to: ref.to,
-        reason: ref.reason,
-        status: ref.status,
-        acceptedDate: ref.acceptedDate ? new Date(ref.acceptedDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined,
-        urgency: ref.urgency || 'Routine'
-    }));
+    // Default image if null
+    // Ensure we handle explicit null or string "null"
+    const hasProfilePic = profile.profile_picture && profile.profile_picture !== "null";
+    const image = hasProfilePic 
+        ? profile.profile_picture 
+        : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400"; // Fallback
 
-    // Home Visit History
-    const visitHistory = data.referral_homevisit.home_visit_history.map((visit: any, i: number) => ({
-        id: i + 1,
-        date: new Date(visit.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }),
-        visitor: visit.visitor,
-        status: visit.status,
-        result: visit.results,
-        photos: visit.photos
-    }));
-
-    // Tele Consult History
-    const teleConsultHistory = data.tele_consultation.map((tele: any, i: number) => ({
-        id: i + 1,
-        date: new Date(tele.date_time).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }),
-        status: tele.status,
-        link: tele.meeting_link
-    }));
+    // Additional fields for Dashboard compatibility (flattening)
+    // We pick the first relevant appointment for the 'date'/'time' fields used in Dashboard
+    const dashboardAppt = nextAppt || data.appointments[0]; 
 
     return {
-        id: (index + 1).toString(),
-        hn: profile.generated_code || `HN-00${index + 1}`,
-        cid: profile.id_card || `1-1000-00000-${index + 1}`,
-        name: profile.full_name_th,
+        id: id,
+        hn: hn,
+        cid: profile.id_card || '-',
+        name: profile.full_name_th || profile.full_name_en,
         age: calculateAge(profile.dob),
-        dob: profile.dob,
+        dob: profile.dob || '',
         diagnosis: diagnosis.diagnosis,
         status: status,
-        hospital: insurance.treating_hospitals[0],
-        responsibleHealthCenter: insurance.pcu_affiliation,
+        hospital: insurance.main_affiliation,
+        responsibleHealthCenter: insurance.pcu_affiliation || '-',
         contact: {
-            name: profile.guardian?.name || profile.full_name_th, // Fallback if self
-            phone: profile.phone || profile.guardian?.phone || '-',
-            homePhone: profile.home_phone,
-            address: `${profile.address.house_no} ม.${profile.address.moo} ต.${profile.address.sub_district} อ.${profile.address.district} จ.${profile.address.province} ${profile.address.zipcode || ''}`,
-            zipcode: profile.address.zipcode,
-            relation: profile.guardian?.relationship || 'ตนเอง'
+            name: profile.guardian?.name || '-',
+            phone: profile.guardian?.phone || profile.phone || '-',
+            homePhone: profile.home_phone || '-',
+            address: profile.address ? `${profile.address.house_no} ${profile.address.sub_district} ${profile.address.district} ${profile.address.province}` : '-',
+            zipcode: profile.address?.zipcode || '',
+            relation: profile.guardian?.relationship
         },
         rights: insurance.insurance_type,
-        nextAppointment: data.appointments.length > 0 ? new Date(data.appointments[0].date_time).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
-        image: profile.profile_picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${index}`,
-        timeline: timeline,
-        history: appointmentHistory,
-        funding: funding,
+        // New Fields Mapping
+        race: profile.race || '-',
+        religion: profile.religion || '-',
+        maritalStatus: profile.marital_status || '-',
+        occupation: profile.occupation || '-',
+        bloodGroup: profile.blood_group || '-',
+        allergies: profile.allergies || '-',
+        hospitalInfo: {
+            // distance: insurance.distance_km || 0,
+            // travelTime: insurance.travel_time_mins || 0,
+            firstDate: insurance.first_treatment_date || '',
+            responsibleRph: insurance.pcu_affiliation || '-'
+        },
         funds: funds,
-        diagnosisTags: [diagnosis.diagnosis],
+        diagnosisTags: diagnosisTags,
         doctor: diagnosis.diagnosing_doctor,
         gpsLocation: profile.gps_location,
-        // Extended
-        race: profile.race || 'ไทย',
-        religion: profile.religion,
-        maritalStatus: profile.marital_status,
-        occupation: profile.occupation,
-        bloodGroup: profile.blood_group,
-        allergies: profile.allergies,
-        hospitalInfo: {
-            // distance: insurance.distance_km,
-            // travelTime: insurance.travel_time_mins,
-            firstDate: insurance.first_treatment_date ? new Date(insurance.first_treatment_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric'}) : '-',
-            responsibleRph: insurance.pcu_affiliation
-        },
-        visitHistory,
-        referralHistory,
-        teleConsultHistory,
-        appointmentHistory
+        nextAppointment: nextAppt ? `${nextAppt.date_time.split('T')[0]} ${nextAppt.date_time.split('T')[1]?.substring(0,5)}` : null,
+        image: image,
+        timeline: timeline,
+        history: diagnosis.treatment_plan.map((plan: any, i: number) => {
+            const appt = plan.appointment_id ? data.appointments.find((a:any)=>a.appointment_id === plan.appointment_id) : null;
+            let dateStr = '-';
+            let sortDate = '1900-01-01T00:00:00'; // Default low date
+            
+            if (appt) {
+                const d = new Date(appt.date_time);
+                dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+                sortDate = appt.date_time;
+            }
+
+            return {
+                id: i,
+                date: dateStr,
+                rawDate: sortDate,
+                title: plan.task,
+                detail: plan.task,
+                doctor: diagnosis.diagnosing_doctor,
+                department: 'OPD',
+                status: plan.status
+            };
+        }),
+        visitHistory: (data.referral_homevisit.home_visit_history || []).map((visit: any) => {
+            const d = new Date(visit.date);
+            const thaiDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+            
+            // Simulate request date if not present (e.g. 3 days before visit)
+            let reqD = new Date(visit.date);
+            if (visit.requestDate) {
+                reqD = new Date(visit.requestDate);
+            } else {
+                reqD.setDate(d.getDate() - 3);
+            }
+            const thaiRequestDate = reqD.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+
+            let status = 'Pending';
+            const s = (visit.status || '').toLowerCase();
+            if (['completed', 'complete', 'done', 'success', 'เสร็จสิ้น', 'visited', 'อยู่ในพื้นที่', 'ลงพื้นที่'].includes(s)) status = 'Completed';
+            else if (['rejected', 'cancel', 'cancelled', 'ปฏิเสธ', 'ยกเลิก'].includes(s)) status = 'Rejected';
+            else if (['nothome', 'not_home', 'not home', 'ไม่อยู่'].includes(s)) status = 'NotHome';
+            else if (['notallowed', 'not_allowed', 'not allowed', 'ไม่อนุญาต'].includes(s)) status = 'NotAllowed';
+            else if (['inprogress', 'in_progress', 'working', 'ดำเนินการ'].includes(s)) status = 'InProgress';
+            else if (['waitvisit', 'wait_visit', 'waiting', 'รอเยี่ยม'].includes(s)) status = 'WaitVisit';
+            else status = 'Pending';
+
+            return {
+                date: thaiDate,
+                rawDate: visit.date,
+                requestDate: thaiRequestDate,
+                rawRequestDate: reqD.toISOString(),
+                title: visit.results || 'เยี่ยมบ้าน',
+                note: visit.results,
+                provider: visit.visitor,
+                status: status,
+                type: visit.visit_type || 'Joint',
+                images: visit.photos || []
+            };
+        }),
+        appointmentHistory: (data.appointments || []).map((appt: any) => {
+            const s = appt.status;
+            let status = 'waiting';
+            if (['ยืนยันแล้ว', 'มาตามนัด', 'confirmed', 'checked-in'].includes(s)) status = 'confirmed';
+            else if (['เสร็จสิ้น', 'completed'].includes(s)) status = 'completed';
+            else if (['ยกเลิก', 'ขาดนัด', 'cancelled', 'missed'].includes(s)) status = 'cancelled';
+            
+            const d = new Date(appt.date_time);
+            // Format: DD-MMM-YY (Thai)
+            const thaiDate = d.toLocaleDateString('th-TH', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: '2-digit' 
+            });
+
+            return {
+                date: thaiDate,
+                rawDate: appt.date_time,
+                title: appt.type,
+                location: appt.location,
+                doctor: appt.doctor_name,
+                room: appt.room,
+                status: status,
+                note: appt.status
+            };
+        }),
+        referralHistory: (data.referral_homevisit.referral_history || []).map((ref: any) => {
+            const d = new Date(ref.date);
+            const thaiDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+            
+            let acceptedDateFormatted = null;
+            if (ref.acceptedDate) {
+                 const ad = new Date(ref.acceptedDate);
+                 acceptedDateFormatted = ad.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+            }
+
+            return {
+                date: thaiDate,
+                rawDate: ref.date,
+                acceptedDate: ref.acceptedDate,
+                acceptedDateFormatted: acceptedDateFormatted,
+                title: ref.reason,
+                from: ref.from,
+                to: ref.to,
+                doctor: ref.doctor || diagnosis.diagnosing_doctor || '-',
+                status: ref.status === 'ตอบรับแล้ว' ? 'Accepted' : 'Pending'
+            };
+        }),
+        teleConsultHistory: (data.tele_consultation || []).map((tele: any) => {
+             const d = new Date(tele.date_time);
+             const thaiDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+             return {
+                 date: thaiDate,
+                 rawDate: tele.date_time,
+                 title: 'Tele-consultation',
+                 channel: tele.channel || 'mobile',
+                 agency_name: tele.agency_name,
+                 doctor: '-',
+                 status: tele.status === 'เสร็จสิ้น' ? 'Completed' : 'Pending',
+                 meetingLink: tele.meeting_link
+             };
+        }),
+        funding: funding,
+        
+        // Flattened fields for Dashboard
+        date: dashboardAppt ? dashboardAppt.date_time.split('T')[0] : undefined,
+        time: dashboardAppt ? dashboardAppt.date_time.split('T')[1]?.substring(0,5) : undefined,
+        type: dashboardAppt ? dashboardAppt.type : undefined,
+        room: dashboardAppt ? dashboardAppt.room : undefined,
+        detail: dashboardAppt ? dashboardAppt.location : undefined,
+
+        // Mapped fields for filters
+        medicalCondition: diagnosis.diagnosis,
+        province: profile.address?.province || '',
+        apptStatus: (() => {
+            const s = dashboardAppt?.status;
+            if (!s) return undefined;
+            if (['ยืนยันแล้ว', 'มาตามนัด', 'confirmed', 'checked-in'].includes(s)) return 'confirmed';
+            if (['เสร็จสิ้น', 'completed'].includes(s)) return 'completed';
+            if (['ยกเลิก', 'ขาดนัด', 'cancelled', 'missed'].includes(s)) return 'cancelled';
+            return 'waiting';
+        })(),
     };
 });
 
-// Mock Data Generators for other lists (derived from PATIENTS_DATA for consistency)
+// Generate REFERRAL_DATA from JSON
+export const REFERRAL_DATA = mockData.flatMap((data: any, index: number) => {
+    const profile = data.personal_profile;
+    const hn = profile.id_card || profile.generated_code || profile.passport_no || `HN-${index + 1}`;
+    const name = profile.full_name_th || profile.full_name_en;
 
-export const REFERRAL_DATA = PATIENTS_DATA.flatMap(p => {
-    // Generate referrals based on referral history
-    return (p.referralHistory || []).map((ref: any, i: number) => ({
-        id: `${p.id}-${i}`,
-        date: '2025-12-04', // FORCE TODAY for demo
-        time: '10:30',
-        patientName: p.name,
-        patientHn: p.hn,
-        hospital: ref.from, // Origin
-        destination: ref.to,
-        status: ref.status, // Pending, Accepted
-        urgency: ref.urgency,
-        diagnosis: p.diagnosis,
-        type: ref.to === 'รพ.มหาราชนครเชียงใหม่' ? 'Refer In' : 'Refer Out', // Simple logic
-        patientId: p.id
+    return (data.referral_homevisit.referral_history || []).map((ref: any, refIndex: number) => ({
+        id: `REF-${index}-${refIndex}`,
+        patientName: name,
+        name: name,
+        patientHn: hn,
+        hn: hn,
+        referralNo: `REF-${hn.substring(0,4)}-${refIndex}`,
+        date: ref.date, // Display date
+        referralDate: ref.date,
+        acceptedDate: ref.acceptedDate,
+        time: '09:00', // Mock time
+        type: 'Refer In', // Simplified, assumes Refer In for now or logic needed
+        status: ref.status === 'ตอบรับแล้ว' ? 'Accepted' : 'pending',
+        hospital: ref.from,
+        destinationHospital: ref.to,
+        reason: ref.reason,
+        urgency: 'Standard',
+        documents: [],
+        logs: []
     }));
 });
 
-export const HOME_VISIT_DATA = PATIENTS_DATA.flatMap(p => {
-    return (p.visitHistory || []).map((v: any, i: number) => ({
-        id: `${p.id}-${i}`,
-        date: '2025-12-04', // FORCE TODAY
-        time: '13:00',
-        name: p.name,
-        hn: p.hn,
-        rph: p.responsibleHealthCenter,
-        status: v.status, // Pending, InProgress, Completed
-        type: 'Routine Visit',
-        patientId: p.id
-    }));
+// Generate HOME_VISIT_DATA from JSON
+export const HOME_VISIT_DATA = mockData.flatMap((data: any, index: number) => {
+    const profile = data.personal_profile;
+    const hn = profile.id_card || profile.generated_code || profile.passport_no || `HN-${index + 1}`;
+    const name = profile.full_name_th || profile.full_name_en;
+    
+    // Address format
+    const addr = profile.address;
+    const addressStr = addr 
+        ? `${addr.house_no || ''} ${addr.moo ? 'ม.'+addr.moo : ''} ${addr.sub_district || ''} ${addr.district || ''} ${addr.province || ''}`.trim() 
+        : 'ไม่ระบุที่อยู่';
+
+    return (data.referral_homevisit.home_visit_history || []).map((visit: any, vIndex: number) => {
+        // Calculate request date logic
+        const d = new Date(visit.date);
+        let reqD = new Date(visit.date);
+        if (visit.requestDate) {
+             reqD = new Date(visit.requestDate);
+        } else {
+             reqD.setDate(d.getDate() - 3);
+        }
+        const requestDateStr = reqD.toISOString().split('T')[0];
+
+        let status = 'Pending';
+        const s = (visit.status || '').toLowerCase();
+        if (['completed', 'complete', 'done', 'success', 'เสร็จสิ้น', 'visited', 'อยู่ในพื้นที่', 'ลงพื้นที่'].includes(s)) status = 'Completed';
+        else if (['rejected', 'cancel', 'cancelled', 'ปฏิเสธ', 'ยกเลิก'].includes(s)) status = 'Rejected';
+        else if (['nothome', 'not_home', 'not home', 'ไม่อยู่'].includes(s)) status = 'NotHome';
+        else if (['notallowed', 'not_allowed', 'not allowed', 'ไม่อนุญาต'].includes(s)) status = 'NotAllowed';
+        else if (['inprogress', 'in_progress', 'working', 'ดำเนินการ'].includes(s)) status = 'InProgress';
+        else if (['waitvisit', 'wait_visit', 'waiting', 'รอเยี่ยม'].includes(s)) status = 'WaitVisit';
+        else status = 'Pending';
+
+        return {
+            id: `VISIT-${index}-${vIndex}`,
+            patientImage: profile.profile_picture,
+            patientName: name, // For compatibility
+            name: name, // For compatibility
+            hn: hn,
+            patientAddress: addressStr,
+            date: visit.date,
+            time: '10:00', // Mock
+            type: visit.visit_type || 'Joint',
+            status: status,
+            detail: visit.results,
+            rph: visit.visitor,
+            requestDate: requestDateStr,
+            note: visit.results,
+            images: visit.photos,
+            data: visit.data || {}
+        };
+    });
 });
 
-export const TELEMED_DATA = PATIENTS_DATA.flatMap(p => {
-    return (p.teleConsultHistory || []).map((t: any, i: number) => ({
-        id: `${p.id}-${i}`,
-        date: '2025-12-04', // FORCE TODAY
-        time: '14:00',
-        name: p.name,
-        hn: p.hn,
-        status: t.status, // Pending, Completed
-        channel: 'mobile',
-        patientId: p.id
+// Generate TELEMED_DATA from JSON
+export const TELEMED_DATA = mockData.flatMap((data: any, index: number) => {
+    const profile = data.personal_profile;
+    const hn = profile.id_card || profile.generated_code || profile.passport_no || `HN-${index + 1}`;
+    const name = profile.full_name_th || profile.full_name_en;
+
+    return (data.tele_consultation || []).map((tele: any, tIndex: number) => ({
+        id: `TELE-${index}-${tIndex}`,
+        patientImage: profile.profile_picture,
+        patientName: name,
+        name: name,
+        hn: hn,
+        date: tele.date_time.split('T')[0],
+        time: tele.date_time.split('T')[1]?.substring(0,5),
+        type: 'Telemed',
+        status: tele.status === 'เสร็จสิ้น' ? 'Completed' : 'Waiting',
+        detail: 'Tele-consultation',
+        channel: tele.channel || 'mobile',
+        agency_name: tele.agency_name,
+        meetingLink: tele.meeting_link
     }));
 });

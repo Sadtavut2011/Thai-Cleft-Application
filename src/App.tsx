@@ -237,7 +237,6 @@ function MobileLayout() {
                     />
                 </div>
             )}
-
         </div>
       </div>
     </div>
