@@ -242,18 +242,18 @@ export function ReferralSystem({ onBack }: { onBack?: () => void }) {
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="min-w-0 flex-1 pr-20 md:pr-0">
               <div className="flex items-baseline gap-2 mb-2 mt-8 md:mt-0">
-                <h2 className="text-xl font-bold text-[#5e5873] truncate">{selectedReferral.patientName}</h2>
-                <span className="text-sm text-gray-500 whitespace-nowrap">(HN: {selectedReferral.patientHn})</span>
+                <h2 className="text-xl font-bold text-[#5e5873] truncate">{String(selectedReferral.patientName)}</h2>
+                <span className="text-sm text-gray-500 whitespace-nowrap">(HN: {String(selectedReferral.patientHn)})</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-400 shrink-0">ส่งต่อไปยัง:</span>
-                <span className="font-medium text-gray-700 truncate">{selectedReferral.destinationHospital}</span>
+                <span className="font-medium text-gray-700 truncate">{String(selectedReferral.destinationHospital)}</span>
               </div>
             </div>
 
             <div className="flex flex-col items-start md:items-end gap-3 w-full md:w-auto">
               <Badge className={cn("text-xs px-3 py-1 absolute top-6 right-6 md:static", getStatusColor(selectedReferral.status))}>
-                {STATUS_LABELS[selectedReferral.status] || selectedReferral.status}
+                {String(STATUS_LABELS[selectedReferral.status] || selectedReferral.status)}
               </Badge>
 
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
@@ -365,20 +365,20 @@ export function ReferralSystem({ onBack }: { onBack?: () => void }) {
                       selectedReferral.urgency === 'Emergency' ? 'text-red-600' :
                         selectedReferral.urgency === 'Urgent' ? 'text-orange-600' : 'text-slate-600'
                     )}>
-                      {selectedReferral.urgency}
+                      {String(selectedReferral.urgency)}
                     </div>
                   </div>
                 </div>
 
                 <div>
                   <Label className="text-gray-500 text-xs uppercase">การวินิจฉัย (Diagnosis)</Label>
-                  <p className="text-gray-800 font-medium mt-1">{selectedReferral.diagnosis}</p>
+                  <p className="text-gray-800 font-medium mt-1">{String(selectedReferral.diagnosis)}</p>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                   <Label className="text-gray-500 text-xs uppercase mb-2 block">เหตุผล / รายละเอียดเพิ่มเติม</Label>
                   <p className="text-gray-700 leading-relaxed text-sm">
-                    {selectedReferral.reason}
+                    {String(selectedReferral.reason)}
                   </p>
                 </div>
 
@@ -388,7 +388,7 @@ export function ReferralSystem({ onBack }: { onBack?: () => void }) {
                     {selectedReferral.documents.map((doc: string, i: number) => (
                       <div key={i} className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors">
                         <Paperclip size={14} />
-                        {doc}
+                        {String(doc)}
                       </div>
                     ))}
                     {selectedReferral.documents.length === 0 && <span className="text-gray-400 text-sm">- ไม่มีเอกสารแนบ -</span>}
@@ -411,10 +411,10 @@ export function ReferralSystem({ onBack }: { onBack?: () => void }) {
                 {selectedReferral.hospital ? (
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-[#dff6f8] text-[#00cfe8] flex items-center justify-center font-bold">
-                      {selectedReferral.hospital.charAt(0)}
+                      {String(selectedReferral.hospital).charAt(0)}
                     </div>
                     <div>
-                      <div className="font-medium text-sm text-gray-800">{selectedReferral.hospital}</div>
+                      <div className="font-medium text-sm text-gray-800">{String(selectedReferral.hospital)}</div>
                       <div className="text-xs text-gray-500">ผู้ส่งเรื่อง</div>
                     </div>
                   </div>
@@ -447,10 +447,10 @@ export function ReferralSystem({ onBack }: { onBack?: () => void }) {
                         <div className="text-xs text-gray-400 mb-0.5">
                           {format(new Date(log.date), "d MMM HH:mm", { locale: th })}
                         </div>
-                        <div className="font-semibold text-sm text-gray-800">{STATUS_LABELS[log.status] || log.status}</div>
-                        <div className="text-sm text-gray-600">{log.description}</div>
+                        <div className="font-semibold text-sm text-gray-800">{String(STATUS_LABELS[log.status] || log.status)}</div>
+                        <div className="text-sm text-gray-600">{String(log.description)}</div>
                         <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                          <User size={10} /> {log.actor}
+                          <User size={10} /> {String(log.actor)}
                         </div>
                       </div>
                     </div>
