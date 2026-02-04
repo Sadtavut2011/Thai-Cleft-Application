@@ -107,7 +107,10 @@ export default function MobileDashboard({ onRegisterPatient, onProfileClick, onN
               />
             </div>
 
-            <button className="w-full bg-[#5B4D9D] text-white py-2.5 rounded-xl font-bold shadow-lg mb-4 hover:bg-[#4a3e85] transition">
+            <button 
+              className="w-full bg-[#5B4D9D] text-white py-2.5 rounded-xl font-bold shadow-lg mb-4 hover:bg-[#4a3e85] transition"
+              style={{ backgroundColor: '#5B4D9D', color: 'white' }}
+            >
               ค้นหา
             </button>
 
