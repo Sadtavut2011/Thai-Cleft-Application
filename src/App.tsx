@@ -111,6 +111,7 @@ function MobileLayout() {
                                 setSelectedPatient(null);
                                 setSelectedHistoryPatient(null);
                             }}
+
                             className={`flex-1 flex flex-col items-center gap-[8px] p-0 rounded-xl transition-all ${currentView === 'dashboard'
                                 ? 'text-[#49358e]'
                                 : 'text-[#b8aeea]'
