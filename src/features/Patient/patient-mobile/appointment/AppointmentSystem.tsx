@@ -25,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../../../components/ui/dropdown-menu";
-import { PATIENTS_DATA, APPOINTMENTS_DATA } from '../../../../data/patientData';
+import { PATIENTS_DATA, REFERRAL_DATA, HOME_VISIT_DATA, TELEMED_DATA } from '../../../../data/patientData';
 import AppointmentForm from './forms/AppointmentForm';
 
 // Helper function: แปลง Date Object เป็น YYYY-MM-DD (Local Time Safe)

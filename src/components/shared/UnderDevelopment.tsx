@@ -16,7 +16,7 @@ export default function UnderDevelopment({ featureName, role }: UnderDevelopment
         {featureName || 'Functionality'} Under Development
       </h3>
       <p className="text-slate-500 max-w-md">
-        ส่วนงาน{role ? `สำหรับ ${role}` : ''} นี้กำลังอยู่ในระหว่างการพัฒนา (กำลังพัฒนา)
+        ส่วนงาน{role ? \`สำหรับ \${role}\` : ''} นี้กำลังอยู่ในระหว่างการพัฒนา (กำลังพัฒนา)
       </p>
     </div>
   );

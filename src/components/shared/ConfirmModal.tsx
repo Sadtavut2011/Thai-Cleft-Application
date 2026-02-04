@@ -24,6 +24,7 @@ interface ConfirmModalProps {
   onOpenVisitForm?: () => void;
   onRequestRefer?: () => void; // New prop for Refer Patient
   onViewHistory?: () => void;
+  onViewDetail?: () => void;
   role?: string;
 }
 
@@ -40,6 +41,7 @@ export default function ConfirmModal({
     onOpenVisitForm,
     onRequestRefer,
     onViewHistory,
+    onViewDetail,
     role
 }: ConfirmModalProps) {
   if (!isOpen) return null;
@@ -88,6 +90,7 @@ export default function ConfirmModal({
   const isReferral = ['Referred', 'Refer In', 'Refer Out', 'รับตัว'].includes(displayData.type);
   const isReferPending = ['pending', 'referred'].includes(displayData.status);
   const isReferAccepted = ['accepted', 'confirmed'].includes(displayData.status);
+  const isReferReceived = ['received', 'waiting_doctor'].includes(displayData.status);
   const isHomeVisit = ['Home Visit', 'Joint Visit', 'Routine'].includes(displayData.type);
   const isInProgress = ['inprogress', 'in_progress'].includes(displayData.status);
 
@@ -112,8 +115,15 @@ export default function ConfirmModal({
 
           <div className="p-6 space-y-4">
              {/* Patient Card (Conditional Style) */}
-             <div className={cn(
-                 "p-5 rounded-[28px] border shadow-sm",
+             <div 
+                 onClick={() => {
+                    if (onViewDetail) {
+                        onViewDetail();
+                        onClose();
+                    }
+                 }}
+                 className={cn(
+                 "p-5 rounded-[28px] border shadow-sm cursor-pointer hover:shadow-md transition-all active:scale-[0.98]",
                  isReferral 
                     ? "bg-orange-50 border-orange-200" 
                     : isHomeVisit
@@ -123,9 +133,16 @@ export default function ConfirmModal({
                             : "border-blue-100 bg-blue-50/50"
              )}>
                 <div className="flex flex-col min-w-0">
-                    <h3 className="text-[18px] font-bold text-[#2F80ED] leading-tight mb-1 truncate">
-                        {displayData.patientName}
-                    </h3>
+                    <div className="flex justify-between items-center mb-1">
+                        <h3 className="text-[18px] font-bold text-[#2F80ED] leading-tight truncate pr-2">
+                            {displayData.patientName}
+                        </h3>
+                        <div className="flex items-center text-slate-400 gap-0.5 shrink-0 hover:text-slate-600 transition-colors">
+                            <span className="text-[12px]">ดูรายละเอียด</span>
+                            <ChevronRight size={14} />
+                        </div>
+                    </div>
+
                     <div className="flex gap-4 mb-3">
                         <p className="text-[#64748B] text-[13px] font-medium">
                             HN : {displayData.hn}
@@ -240,7 +257,7 @@ export default function ConfirmModal({
   const getLeftButtonText = () => {
       if (displayData.type === 'Telemed') return 'ประวัติผู้ป่วย';
       if (isHomeVisit) return 'ประวัติผู้ป่วย';
-      if (isReferral && (isReferPending || isReferAccepted)) return 'ประวัติผู้ป่วย';
+      if (isReferral && (isReferPending || isReferAccepted || isReferReceived)) return 'ประวัติผู้ป่วย';
       if (isMissed) return 'ยกเลิก'; // or Close?
       return 'เลื่อนนัดหมาย';
   }
@@ -254,7 +271,8 @@ export default function ConfirmModal({
       if (isMissed) return 'ติดต่อผู้ป่วย'; // Logic for missed
       if (isReferral) {
           if (isReferPending) return 'ยืนยันการรับตัว';
-          if (isReferAccepted) return 'บันทึกการรักษา';
+          if (isReferAccepted) return 'ยืนยันรับตัว';
+          if (isReferReceived) return 'บันทึกการรักษา';
       }
       if (isConfirmed) return 'บันทึกการรักษา';
       if (isWaiting) return 'ยืนยันการรักษา';
@@ -285,11 +303,18 @@ export default function ConfirmModal({
         <div className="p-6 space-y-6">
             
              {/* Patient Card */}
-             <div className={cn(
-                 "p-5 rounded-[28px] border shadow-sm transition-colors",
+             <div 
+                onClick={() => {
+                    if (onViewDetail) {
+                        onViewDetail();
+                        onClose();
+                    }
+                }}
+                className={cn(
+                 "p-5 rounded-[28px] border shadow-sm transition-all cursor-pointer hover:shadow-md active:scale-[0.98]",
                  isReferral 
                     ? "bg-[#fff7ed] border-orange-200" // Orange for Refer
-                    : isHomeVisit
+                    : (isHomeVisit || displayData.type === 'Joint')
                         ? "bg-[#f0fdf4] border-green-200" // Green for Home Visit
                         : displayData.type === 'Telemed'
                             ? "bg-pink-50 border-pink-200"
@@ -297,14 +322,20 @@ export default function ConfirmModal({
              )}>
                  <div className="flex flex-col min-w-0">
                      <div>
-                         <h3 className="text-[18px] font-bold text-[#2F80ED] leading-tight mb-1 truncate">
-                             {displayData.patientName}
-                         </h3>
+                         <div className="flex justify-between items-center mb-1">
+                             <h3 className="text-[18px] font-bold text-[#2F80ED] leading-tight truncate pr-2">
+                                 {displayData.patientName}
+                             </h3>
+                             <div className="flex items-center text-slate-400 gap-0.5 shrink-0 hover:text-slate-600 transition-colors">
+                                <span className="text-[12px]">ดูรายละเอียด</span>
+                                <ChevronRight size={14} />
+                             </div>
+                         </div>
                          <div className="flex gap-4 mb-3">
-                             <p className="text-[#64748B] text-[13px] font-medium">
+                             <p className="text-[#64748B] text-[14px] font-medium">
                                  HN : {displayData.hn}
                              </p>
-                             <p className="text-[#64748B] text-[13px] font-medium">
+                             <p className="text-[#64748B] text-[14px] font-medium">
                                  อายุ {displayData.age.replace(' ปี', '')} ปี
                              </p>
                          </div>
@@ -320,12 +351,12 @@ export default function ConfirmModal({
                              {displayData.type === 'Refer Out' ? 'Refer Out ไปยัง ' : 'Refer In จาก '} 
                              {displayData.hospital || "รพ.สต.บ้านดอย"}
                          </div>
-                     ) : isHomeVisit ? (
+                     ) : (isHomeVisit || displayData.type === 'Joint') ? (
                          <div className="flex flex-col gap-1 mt-1 w-full">
                              <p className="text-[#64748B] text-[13px] font-medium">หน่วยงานที่รับผิดชอบ</p>
                              <div className="flex items-center gap-2 text-[#334155] font-bold text-[15px]">
                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#94A3B8]"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                 {displayData.hospital || "รพ.สต.ดอนเมือง"}
+                                 {(data as any).rph || displayData.hospital}
                              </div>
                          </div>
                      ) : displayData.type === 'Telemed' ? (
@@ -361,8 +392,15 @@ export default function ConfirmModal({
                         <Calendar size={20} />
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5">วันที่นัดหมาย</p>
-                        <p className="text-slate-800 font-bold text-sm">{displayData.date}</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5 text-[14px]">วันที่นัดหมาย</p>
+                        <p className="text-slate-800 font-bold text-sm">
+                            {(() => {
+                                const d = new Date(displayData.date);
+                                return !isNaN(d.getTime()) 
+                                    ? d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })
+                                    : displayData.date;
+                            })()}
+                        </p>
                     </div>
                 </div>
                  <div className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
@@ -370,13 +408,26 @@ export default function ConfirmModal({
                         <Clock size={20} />
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5">เวลานัดหมาย</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5 text-[14px]">เวลานัดหมาย</p>
                         <p className="text-slate-800 font-bold text-sm">{displayData.time}</p>
                     </div>
                 </div>
             </div>
 
             {/* Actions */}
+            {displayData.type === 'Telemed' ? (
+                <div className="pt-2 w-full text-left">
+                     <label className="text-xs text-slate-400 block mb-1">Meeting Link</label>
+                     <a 
+                        href={(data as any).meetingLink || 'https://zoom.us/j/123456789'} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-blue-600 hover:underline break-all block text-[16px] font-medium"
+                     >
+                         {(data as any).meetingLink || 'https://zoom.us/j/123456789'}
+                     </a>
+                </div>
+            ) : (
             <div className="flex gap-3 pt-2">
                 <button 
                     onClick={() => {
@@ -429,6 +480,9 @@ export default function ConfirmModal({
                              if (isReferPending) {
                                  if (onConfirm) onConfirm();
                              } else if (isReferAccepted) {
+                                 // Now moves to 'received' state
+                                 if (onConfirm) onConfirm();
+                             } else if (isReferReceived) {
                                  if (onRecordTreatment) onRecordTreatment();
                              }
                              onClose();
@@ -456,6 +510,7 @@ export default function ConfirmModal({
                     {getRightButtonText()}
                 </button>
             </div>
+            )}
 
         </div>
       </div>
