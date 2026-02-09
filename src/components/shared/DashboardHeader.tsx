@@ -1,5 +1,5 @@
 import React from 'react';
-import svgPaths from "../../imports/svg-bdnktn60hj";
+import svgPaths from "../../components/imports/svg-bdnktn60hj"; // Adjusted import path assuming imports is in components
 import imgImage2 from "figma:asset/59a7cc50d1086cde4a964d74ca0097bd1d33ca70.png";
 import imgFrame36 from "figma:asset/d2e5b3611c651e5539da38843ee22972bf9fa81f.png";
 import imgTotalPatients from "figma:asset/6bae25ea6c15f0f26e6cf653a0b892b2961bf13d.png";
@@ -75,21 +75,21 @@ function Text({ text }: TextProps) {
 }
 
 interface DashboardHeaderProps {
-  stats?: {
-    total: number | string;
-    followUp: number | string;
-    missed: number | string;
-    assigned: number | string;
-  };
-  hospitalName?: string;
+    stats?: {
+        total: number | string;
+        followUp: number | string;
+        missed: number | string;
+        assigned: number | string;
+    };
+    hospitalName?: string;
 }
 
 export default function DashboardHeader({ stats, hospitalName = "โรงพยาบาลฝาง" }: DashboardHeaderProps) {
   const displayStats = {
-    total: stats?.total || "19,256",
-    followUp: stats?.followUp || "7,789",
-    missed: stats?.missed || "356",
-    assigned: stats?.assigned || "12"
+      total: stats?.total || "19,256",
+      followUp: stats?.followUp || "7,789",
+      missed: stats?.missed || "356",
+      assigned: stats?.assigned || "12"
   };
 
   return (
@@ -100,30 +100,48 @@ export default function DashboardHeader({ stats, hospitalName = "โรงพย
       </div>
       <div className="size-full relative z-10">
         <div className="content-stretch flex flex-col gap-[16px] items-start px-[16px] py-[20px] relative size-full h-full justify-between">
-          <div className="h-[64px] w-full" /> {/* Spacer for TopBar */}
-
+          <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
+            <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
+              <div className="relative shrink-0 size-[40px] rounded-full overflow-hidden bg-white p-1" data-name="image 2">
+                <img alt="" className="w-full h-full object-contain" src={imgImage2} />
+              </div>
+              <div className="content-stretch flex items-center relative shrink-0">
+                <div className="bg-[#f6f5ff] content-stretch flex gap-[8px] items-center justify-center not-italic px-[12px] py-[4px] relative rounded-[99px] shrink-0 text-[16px] text-nowrap shadow-sm">
+                  <p className="font-['IBM_Plex_Sans_Thai'] font-medium leading-[1.5] relative shrink-0 text-[#49358e]">{hospitalName}</p>
+                  <div className="flex flex-col justify-center leading-[0] relative shrink-0 text-[#6b7280] text-center tracking-[0.0232px]">
+                    <ChevronDownIcon />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="content-stretch flex flex-col font-['IBM_Plex_Sans_Thai'] font-semibold items-end justify-center leading-[1.5] not-italic relative shrink-0 text-nowrap">
+              <p className="relative shrink-0 text-[16px] text-white">2 กันยายน 2568</p>
+              <p className="relative shrink-0 text-[#f3f4f6] text-[12px]">13:30 น.</p>
+            </div>
+          </div>
+          
           <div className="content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full mt-auto">
             <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full">
               <Wrapper>
                 <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#3c3c3c] text-[14px] md:text-[16px] text-nowrap">ผู้ป่วยทั้งหมด</p>
                 <div className="content-stretch flex gap-[4px] items-end relative shrink-0 z-10">
-                  <Text text={String(displayStats.total)} />
-                  <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/คน</p>
+                   <Text text={String(displayStats.total)} />
+                   <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/คน</p>
                 </div>
                 {/* Decoration 1 */}
                 <div className="absolute right-2 bottom-2 w-12 h-12">
-                  <img src={imgTotalPatients} className="w-full h-full object-contain" alt="" />
+                   <img src={imgTotalPatients} className="w-full h-full object-contain" alt="" />
                 </div>
               </Wrapper>
               <Wrapper>
                 <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#3c3c3c] text-[14px] md:text-[16px] text-nowrap">ผู้ป่วยต้องติดตาม</p>
                 <div className="content-stretch flex gap-[4px] items-end relative shrink-0 z-10">
-                  <Text text={String(displayStats.followUp)} />
-                  <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/คน</p>
+                   <Text text={String(displayStats.followUp)} />
+                   <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/คน</p>
                 </div>
-                {/* Decoration 2 */}
+                 {/* Decoration 2 */}
                 <div className="absolute right-2 bottom-2 w-12 h-12">
-                  <img src={imgFollowUp} className="w-full h-full object-contain" alt="" />
+                   <img src={imgFollowUp} className="w-full h-full object-contain" alt="" />
                 </div>
               </Wrapper>
             </div>
@@ -131,23 +149,23 @@ export default function DashboardHeader({ stats, hospitalName = "โรงพย
               <Wrapper>
                 <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#3c3c3c] text-[14px] md:text-[16px] text-nowrap">ขาดนัด</p>
                 <div className="content-stretch flex gap-[4px] items-end relative shrink-0 z-10">
-                  <Text text={String(displayStats.missed)} />
-                  <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/คน</p>
+                   <Text text={String(displayStats.missed)} />
+                   <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/คน</p>
                 </div>
-                {/* Decoration 3 */}
+                 {/* Decoration 3 */}
                 <div className="absolute right-2 bottom-2 w-12 h-12">
-                  <img src={imgMissed} className="w-full h-full object-contain" alt="" />
+                   <img src={imgMissed} className="w-full h-full object-contain" alt="" />
                 </div>
               </Wrapper>
               <Wrapper>
                 <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#3c3c3c] text-[14px] md:text-[16px] text-nowrap">งานมอบหมาย</p>
                 <div className="content-stretch flex gap-[4px] items-end relative shrink-0 z-10">
-                  <Text text={String(displayStats.assigned)} />
-                  <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/งาน</p>
+                   <Text text={String(displayStats.assigned)} />
+                   <p className="font-['IBM_Plex_Sans_Thai'] font-semibold leading-[1.5] not-italic relative shrink-0 text-[#7066a9] text-[14px] md:text-[16px] text-nowrap mb-1">/งาน</p>
                 </div>
-                {/* Decoration 4 */}
+                 {/* Decoration 4 */}
                 <div className="absolute right-2 bottom-2 w-12 h-12">
-                  <img src={imgAssigned} className="w-full h-full object-contain" alt="" />
+                   <img src={imgAssigned} className="w-full h-full object-contain" alt="" />
                 </div>
               </Wrapper>
             </div>
@@ -159,7 +177,7 @@ export default function DashboardHeader({ stats, hospitalName = "โรงพย
 }
 
 const ChevronDownIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m6 9 6 6 6-6" />
-  </svg>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m6 9 6 6 6-6"/>
+    </svg>
 )
