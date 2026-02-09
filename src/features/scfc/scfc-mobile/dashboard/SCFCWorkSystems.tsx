@@ -276,10 +276,11 @@ const SystemsDashboard = ({ onNavigate, stats }: { onNavigate: (sys: string, par
                   icon={<AlertCircle size={16} />}
                   variant="rose"
                   trend="+2 Alerts"
+                  // onClick={() => onNavigate('appointment')} // Optional
                 />
                 <StatCard 
                   title="Tele-consult" 
-                  value={stats.appointments}
+                  value={stats.appointments} // Reuse appointments count for demo or add tele count
                   subtitle="เคสสำเร็จเดือนนี้" 
                   icon={<Video size={16} />}
                   variant="cyan"
