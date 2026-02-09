@@ -91,7 +91,7 @@ export default function ConfirmModal({
   const isReferPending = ['pending', 'referred'].includes(displayData.status);
   const isReferAccepted = ['accepted', 'confirmed'].includes(displayData.status);
   const isReferReceived = ['received', 'waiting_doctor'].includes(displayData.status);
-  const isHomeVisit = ['Home Visit', 'Joint Visit', 'Routine'].includes(displayData.type);
+  const isHomeVisit = ['Home Visit', 'Joint Visit', 'Routine', 'Delegated', 'ฝากเยี่ยม', 'Joint', 'เยี่ยมร่วม'].includes(displayData.type);
   const isInProgress = ['inprogress', 'in_progress'].includes(displayData.status);
 
   // --- COMPLETED STATE LAYOUT ---
@@ -125,12 +125,12 @@ export default function ConfirmModal({
                  className={cn(
                  "p-5 rounded-[28px] border shadow-sm cursor-pointer hover:shadow-md transition-all active:scale-[0.98]",
                  isReferral 
-                    ? "bg-orange-50 border-orange-200" 
+                    ? "bg-[#fff7ed] border-orange-200" 
                     : isHomeVisit
-                        ? "bg-green-50 border-green-200"
+                        ? "bg-[#f0fdf4] border-green-200"
                         : displayData.type === 'Telemed'
                             ? "bg-pink-50 border-pink-200"
-                            : "border-blue-100 bg-blue-50/50"
+                            : "bg-[#ecf4ff] border-blue-200"
              )}>
                 <div className="flex flex-col min-w-0">
                     <div className="flex justify-between items-center mb-1">
@@ -165,7 +165,7 @@ export default function ConfirmModal({
                              <p className="text-[#64748B] text-[13px] font-medium">หน่วยงานที่รับผิดชอบ</p>
                              <div className="flex items-center gap-2 text-[#334155] font-bold text-[15px]">
                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#94A3B8]"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                 {displayData.hospital || "รพ.สต.ดอนเมือง"}
+                                 {(data as any).rph || displayData.hospital || "CM อาสาสมัคร"}
                              </div>
                          </div>
                     ) : displayData.type === 'Telemed' ? (
@@ -259,7 +259,7 @@ export default function ConfirmModal({
       if (isHomeVisit) return 'ประวัติผู้ป่วย';
       if (isReferral && (isReferPending || isReferAccepted || isReferReceived)) return 'ประวัติผู้ป่วย';
       if (isMissed) return 'ยกเลิก'; // or Close?
-      return 'เลื่อนนัดหมาย';
+      return 'ประวัติผู้ป่วย';
   }
 
   const getRightButtonText = () => {
@@ -289,7 +289,7 @@ export default function ConfirmModal({
         
         {/* Header */}
         <div className="pt-6 px-6 pb-2 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-[#1e1b4b] text-[16px]">
+            <h2 className="text-xl font-bold text-[#1e1b4b] text-[20px]">
                 รายละเอียดการนัดหมาย
             </h2>
             <button 
@@ -323,7 +323,7 @@ export default function ConfirmModal({
                  <div className="flex flex-col min-w-0">
                      <div>
                          <div className="flex justify-between items-center mb-1">
-                             <h3 className="text-[18px] font-bold text-[#2F80ED] leading-tight truncate pr-2">
+                             <h3 className="text-[20px] font-bold text-[#2F80ED] leading-tight truncate pr-2">
                                  {displayData.patientName}
                              </h3>
                              <div className="flex items-center text-slate-400 gap-0.5 shrink-0 hover:text-slate-600 transition-colors">
@@ -332,37 +332,37 @@ export default function ConfirmModal({
                              </div>
                          </div>
                          <div className="flex gap-4 mb-3">
-                             <p className="text-[#64748B] text-[14px] font-medium">
+                             <p className="text-[#64748B] text-[16px] font-medium">
                                  HN : {displayData.hn}
                              </p>
-                             <p className="text-[#64748B] text-[14px] font-medium">
+                             <p className="text-[#64748B] text-[16px] font-medium">
                                  อายุ {displayData.age.replace(' ปี', '')} ปี
                              </p>
                          </div>
                          
-                         <p className="text-[#334155] font-bold text-base mb-4 truncate text-[15px]">
+                         <p className="text-[#334155] font-bold text-base mb-4 truncate text-[16px]">
                              {displayData.medicalCondition}
                          </p>
                      </div>
 
                      {/* Content based on Type */}
                      {isReferral ? (
-                         <div className="text-[#EA580C] text-[15px] font-bold">
+                         <div className="text-[#EA580C] text-[16px] font-bold">
                              {displayData.type === 'Refer Out' ? 'Refer Out ไปยัง ' : 'Refer In จาก '} 
                              {displayData.hospital || "รพ.สต.บ้านดอย"}
                          </div>
                      ) : (isHomeVisit || displayData.type === 'Joint') ? (
                          <div className="flex flex-col gap-1 mt-1 w-full">
-                             <p className="text-[#64748B] text-[13px] font-medium">หน่วยงานที่รับผิดชอบ</p>
-                             <div className="flex items-center gap-2 text-[#334155] font-bold text-[15px]">
+                             <p className="text-[#64748B] text-[14px] font-medium">หน่วยงานที่รับผิดชอบ</p>
+                             <div className="flex items-center gap-2 text-[#334155] font-bold text-[16px]">
                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#94A3B8]"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                 {(data as any).rph || displayData.hospital}
+                                 {(data as any).rph || displayData.hospital || "CM อาสาสมัคร"}
                              </div>
                          </div>
                      ) : displayData.type === 'Telemed' ? (
                          <div className="flex flex-col gap-1 mt-1 w-full">
-                             <p className="text-[#64748B] text-[13px] font-medium">ช่องทาง</p>
-                             <div className={`flex items-center gap-2 font-bold text-[15px] ${(data as any).channel === 'mobile' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                             <p className="text-[#64748B] text-[14px] font-medium">ช่องทาง</p>
+                             <div className={`flex items-center gap-2 font-bold text-[16px] ${(data as any).channel === 'mobile' ? 'text-emerald-600' : 'text-blue-600'}`}>
                                  {(data as any).channel === 'mobile' ? (
                                     <>
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
@@ -379,7 +379,7 @@ export default function ConfirmModal({
                      ) : (
                          // Default Appointment (Blue)
                          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white border border-blue-100 text-[#2F80ED] text-[14px] font-bold shadow-sm w-fit">
-                             ห้องตรวจ : {displayData.room || "1"}
+                             {displayData.room || "1"}
                          </div>
                      )}
                  </div>
@@ -392,8 +392,8 @@ export default function ConfirmModal({
                         <Calendar size={20} />
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5 text-[14px]">วันที่นัดหมาย</p>
-                        <p className="text-slate-800 font-bold text-sm">
+                        <p className="text-xs text-slate-500 font-medium mb-0.5 text-[16px]">วันที่นัดหมาย</p>
+                        <p className="text-slate-800 font-bold text-sm text-[20px]">
                             {(() => {
                                 const d = new Date(displayData.date);
                                 return !isNaN(d.getTime()) 
@@ -408,8 +408,8 @@ export default function ConfirmModal({
                         <Clock size={20} />
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5 text-[14px]">เวลานัดหมาย</p>
-                        <p className="text-slate-800 font-bold text-sm">{displayData.time}</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5 text-[16px]">เวลานัดหมาย</p>
+                        <p className="text-slate-800 font-bold text-sm text-[20px]">{displayData.time}</p>
                     </div>
                 </div>
             </div>
@@ -446,7 +446,7 @@ export default function ConfirmModal({
                         if (isMissed) {
                             if (onCancel) onCancel();
                         } else {
-                             if (onReschedule) onReschedule();
+                             if (onViewHistory) onViewHistory();
                         }
                         onClose();
                     }}
