@@ -1,29 +1,29 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext } from 'react';
 
-interface SystemContextType {
-  isOffline: boolean;
-  setIsOffline: (status: boolean) => void;
-  isLoading: boolean;
-  setIsLoading: (status: boolean) => void;
-}
+const defaultStats = {
+  funds: { pending: 8 },
+  appointments: { 
+    total: 1250,
+    pending: 12, 
+    noShow: 15,
+    teleRatio: "35:65"
+  },
+  teleConsult: { 
+    active: 32,
+    avgWait: "15m",
+    stability: 98,
+    specialists: 12
+  }
+};
 
-const SystemContext = createContext<SystemContextType | undefined>(undefined);
+const SystemContext = createContext({ stats: defaultStats });
 
-export function SystemProvider({ children }: { children: ReactNode }) {
-  const [isOffline, setIsOffline] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
+export const SystemProvider = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SystemContext.Provider value={{ isOffline, setIsOffline, isLoading, setIsLoading }}>
+    <SystemContext.Provider value={{ stats: defaultStats }}>
       {children}
     </SystemContext.Provider>
   );
-}
+};
 
-export function useSystem() {
-  const context = useContext(SystemContext);
-  if (context === undefined) {
-    throw new Error('useSystem must be used within a SystemProvider');
-  }
-  return context;
-}
+export const useSystem = () => useContext(SystemContext);
