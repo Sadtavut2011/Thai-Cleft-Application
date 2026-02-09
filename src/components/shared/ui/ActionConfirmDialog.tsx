@@ -43,7 +43,6 @@ export default function ActionConfirmDialog({ isOpen, onClose, appointment: prop
 
   const data = { ...defaultAppointment, ...propAppointment };
 
-  // Helper to safely get data if structure varies
   const displayData = {
       patientName: data.name || data.patientName,
       hn: data.hn,
@@ -144,7 +143,6 @@ export default function ActionConfirmDialog({ isOpen, onClose, appointment: prop
                     ) : (
                         displayData.type === 'Joint Visit' ? (
                             <div className="flex flex-col gap-3 mt-1 w-full">
-
                                 <div>
                                     <p className="text-[#64748B] text-[12px] font-medium mb-1">หน่วยงานที่รับผิดชอบ</p>
                                     <div className="flex items-center gap-2 text-[#475569] font-bold text-[14px]">
