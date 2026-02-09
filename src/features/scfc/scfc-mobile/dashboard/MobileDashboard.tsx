@@ -29,7 +29,7 @@ export default function MobileDashboard({ onRegisterPatient, onProfileClick, onN
       label: 'Inactive',
       sublabel: 'ไม่เคลื่อนไหว',
       color: 'text-slate-600',
-      bgColor: 'bg-slate-50',
+      bgColor: 'bg-slate-50', // Gray-ish
     },
     {
       value: '3',
