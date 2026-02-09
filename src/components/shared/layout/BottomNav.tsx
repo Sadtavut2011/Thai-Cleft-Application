@@ -30,66 +30,66 @@ export default function BottomNav({ activeTab = 'patients', onNavigate }: Bottom
          {/* Home (Dashboard) */}
          <button 
              onClick={() => handleNav('dashboard')}
-             className={\`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full \${
+             className={`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full ${
                  activeTab === 'dashboard' 
                  ? 'text-[#49358e] md:text-primary md:bg-white md:shadow-sm' 
                  : 'text-[#b8aeea] md:text-slate-400 md:hover:bg-white md:hover:text-slate-600'
-             }\`}
+             }`}
          >
              <Home size={20} className="md:w-5 md:h-5" />
-             <span className={\`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap \${activeTab === 'dashboard' ? 'font-bold' : 'font-medium'}\`}>หน้าหลัก</span>
+             <span className={`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap ${activeTab === 'dashboard' ? 'font-bold' : 'font-medium'}`}>หน้าหลัก</span>
          </button>
 
          {/* Patients */}
          <button 
             onClick={() => handleNav('patients')}
-            className={\`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full \${
+            className={`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full ${
                 activeTab === 'patients' 
                 ? 'text-[#49358e] md:text-primary md:bg-white md:shadow-sm' 
                 : 'text-[#b8aeea] md:text-slate-400 md:hover:bg-white md:hover:text-slate-600'
-            }\`}
+            }`}
          >
             <Users size={20} className="md:w-5 md:h-5" />
-            <span className={\`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap \${activeTab === 'patients' ? 'font-bold' : 'font-medium'}\`}>ผู้ป่วย</span>
+            <span className={`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap ${activeTab === 'patients' ? 'font-bold' : 'font-medium'}`}>ผู้ป่วย</span>
          </button>
 
          {/* My Work (Referrals) */}
          <button 
             onClick={() => handleNav('referrals')}
-            className={\`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full \${
+            className={`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full ${
                 activeTab === 'referrals' 
                 ? 'text-[#49358e] md:text-primary md:bg-white md:shadow-sm' 
                 : 'text-[#b8aeea] md:text-slate-400 md:hover:bg-white md:hover:text-slate-600'
-            }\`}
+            }`}
          >
              <FileText size={20} className="md:w-5 md:h-5" />
-             <span className={\`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap \${activeTab === 'referrals' ? 'font-bold' : 'font-medium'}\`}>งานของฉัน</span>
+             <span className={`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap ${activeTab === 'referrals' ? 'font-bold' : 'font-medium'}`}>งานของฉัน</span>
          </button>
 
          {/* Appointments (Calendar) */}
          <button 
              onClick={() => handleNav('calendar')}
-             className={\`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full \${
+             className={`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full ${
                  activeTab === 'calendar' 
                  ? 'text-[#49358e] md:text-primary md:bg-white md:shadow-sm' 
                  : 'text-[#b8aeea] md:text-slate-400 md:hover:bg-white md:hover:text-slate-600'
-             }\`}
+             }`}
          >
              <Calendar size={20} className="md:w-5 md:h-5" />
-             <span className={\`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap \${activeTab === 'calendar' ? 'font-bold' : 'font-medium'}\`}>นัดหมาย</span>
+             <span className={`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap ${activeTab === 'calendar' ? 'font-bold' : 'font-medium'}`}>นัดหมาย</span>
          </button>
 
          {/* Chat */}
          <button 
             onClick={() => handleNav('chat')}
-            className={\`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full \${
+            className={`flex-1 flex flex-col items-center gap-[8px] md:gap-1 p-0 md:p-3 rounded-xl transition-all md:w-full ${
                 activeTab === 'chat' 
                 ? 'text-[#49358e] md:text-primary md:bg-white md:shadow-sm' 
                 : 'text-[#b8aeea] md:text-slate-400 md:hover:bg-white md:hover:text-slate-600'
-            }\`}
+            }`}
          >
              <MessageCircle size={20} className="md:w-5 md:h-5" />
-             <span className={\`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap \${activeTab === 'chat' ? 'font-bold' : 'font-medium'}\`}>สนทนา</span>
+             <span className={`text-[12px] md:text-[10px] leading-[1.5] md:font-medium whitespace-nowrap ${activeTab === 'chat' ? 'font-bold' : 'font-medium'}`}>สนทนา</span>
          </button>
        </nav>
     </div>
