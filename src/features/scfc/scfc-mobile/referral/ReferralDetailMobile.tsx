@@ -17,6 +17,8 @@ import { Badge } from "../../../../components/ui/badge";
 import { Card } from "../../../../components/ui/card";
 import { Separator } from "../../../../components/ui/separator";
 
+// Re-using types from the main system file (we will define them there or share)
+// For now, I'll define a local interface matching the mock data structure
 export interface ReferralCase {
   id: string;
   patientName: string;
