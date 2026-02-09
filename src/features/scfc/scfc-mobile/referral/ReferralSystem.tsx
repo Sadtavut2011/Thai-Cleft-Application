@@ -105,10 +105,13 @@ const FILTER_OPTIONS = [
     { id: 'completed', label: 'เสร็จสิ้น' }
 ];
 
+// --- Main Component ---
+
 export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => void, initialHN?: string }) {
   const [currentView, setCurrentView] = useState<'dashboard' | 'list' | 'detail'>('dashboard');
   const [selectedCase, setSelectedCase] = useState<ReferralCase | null>(null);
   
+  // Filter State
   const [searchQuery, setSearchQuery] = useState(initialHN || "");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedProvince, setSelectedProvince] = useState<string>('All');
@@ -122,6 +125,7 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
     setIsMounted(true);
   }, []);
 
+  // Stats Logic
   const stats = {
     active: 142,
     avgResponse: '4 ชม.',
@@ -147,6 +151,8 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
     closeFn();
   };
 
+  // --- Views ---
+
   if (currentView === 'detail' && selectedCase) {
       return <ReferralDetailMobile referral={selectedCase} onBack={() => setCurrentView('list')} />;
   }
@@ -164,8 +170,11 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
       );
   }
 
+  // --- Dashboard View ---
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+      
+      {/* Header */}
       <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           {onBack && (
@@ -174,6 +183,7 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
             </button>
           )}
           <div>
+
             <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">ส่งต่อผู้ป่วย</h1>
           </div>
         </div>
@@ -185,78 +195,147 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
       </div>
 
       <div className="p-4 space-y-5 flex-1 overflow-y-auto">
+        
+        {/* --- Filter Section --- */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+             
+             {/* Province and Hospital Filters */}
              <div className="flex gap-2">
+                {/* Province Filter */}
                 <Popover open={isProvinceOpen} onOpenChange={setIsProvinceOpen}>
                     <PopoverTrigger asChild>
                         <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none"><MapPin size={18} /></div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">{selectedProvince === 'All' ? 'ทุกจังหวัด' : selectedProvince}</span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><ChevronDown size={18} /></div>
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                                 <MapPin size={18} />
+                             </div>
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                                 {selectedProvince === 'All' ? 'ทุกจังหวัด' : selectedProvince}
+                             </span>
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                 <ChevronDown size={18} />
+                             </div>
                         </button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
-                             <button onClick={() => { setSelectedProvince('All'); setIsProvinceOpen(false); }} className={cn("w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg", selectedProvince === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50")}>ทุกจังหวัด</button>
+                             <button
+                                  onClick={() => { setSelectedProvince('All'); setIsProvinceOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedProvince === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  ทุกจังหวัด
+                              </button>
                              {PROVINCES.filter(p => p !== 'ทุกจังหวัด').map(p => (
-                               <button key={p} onClick={() => { setSelectedProvince(p); setIsProvinceOpen(false); }} className={cn("w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg", selectedProvince === p ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50")}>{p}</button>
+                               <button
+                                  key={p}
+                                  onClick={() => { setSelectedProvince(p); setIsProvinceOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedProvince === p ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  {p}
+                              </button>
                              ))}
                          </div>
                     </PopoverContent>
                 </Popover>
 
+                {/* Hospital Filter */}
                 <Popover open={isHospitalOpen} onOpenChange={setIsHospitalOpen}>
                     <PopoverTrigger asChild>
                         <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none"><Building2 size={18} /></div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">{selectedHospital === 'All' ? 'ทุกโรงพยาบาล' : selectedHospital}</span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><ChevronDown size={18} /></div>
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                                 <Building2 size={18} />
+                             </div>
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                                 {selectedHospital === 'All' ? 'ทุกโรงพยาบาล' : selectedHospital}
+                             </span>
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                 <ChevronDown size={18} />
+                             </div>
                         </button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
-                             <button onClick={() => { setSelectedHospital('All'); setIsHospitalOpen(false); }} className={cn("w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg", selectedHospital === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50")}>ทุกโรงพยาบาล</button>
-                             {HOSPITALS.map(h => (
-                               <button key={h} onClick={() => { setSelectedHospital(h); setIsHospitalOpen(false); }} className={cn("w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg", selectedHospital === h ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50")}>{h}</button>
+                             <button
+                                  onClick={() => { setSelectedHospital('All'); setIsHospitalOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedHospital === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  ทุกโรงพยาบาล
+                              </button>
+                             {HOSPITALS.filter(h => h !== 'ทุกโรงพยาบาล').map(h => (
+                               <button
+                                  key={h}
+                                  onClick={() => { setSelectedHospital(h); setIsHospitalOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedHospital === h ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  {h}
+                              </button>
                              ))}
                          </div>
                     </PopoverContent>
                 </Popover>
              </div>
 
+            {/* Action Button */}
             <div className="pt-1">
-                <Button onClick={() => setCurrentView('list')} className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-12 text-base font-bold shadow-md shadow-teal-100 flex items-center justify-center gap-2">
-                    ดูรายละเอียด <ArrowRight size={18} />
+                <Button 
+                    onClick={() => setCurrentView('list')}
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-12 text-base font-bold shadow-md shadow-teal-100 flex items-center justify-center gap-2"
+                >
+                    ดูรายละเอียด
+                    <ArrowRight size={18} />
                 </Button>
             </div>
         </div>
 
+        {/* --- Stats Summary --- */}
         <div className="grid grid-cols-2 gap-3">
             <div className="bg-white p-3 rounded-xl border border-teal-100 shadow-sm">
                 <div className="flex justify-between items-start mb-2">
-                    <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center"><Activity size={16} /></div>
+                    <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center">
+                        <Activity size={16} />
+                    </div>
                     <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">+14%</span>
                 </div>
                 <span className="text-xl font-black text-slate-800 leading-none">{stats.active}</span>
                 <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">กำลังดำเนินการ</p>
             </div>
+
             <div className="bg-white p-3 rounded-xl border border-amber-100 shadow-sm">
                 <div className="flex justify-between items-start mb-2">
-                    <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center"><Clock size={16} /></div>
+                    <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <Clock size={16} />
+                    </div>
                 </div>
                 <span className="text-xl font-black text-slate-800 leading-none">{stats.avgResponse}</span>
                 <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">รอตอบรับเฉลี่ย</p>
             </div>
+
             <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
                  <div className="flex justify-between items-start mb-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><RotateCcw size={16} /></div>
+                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <RotateCcw size={16} />
+                    </div>
                 </div>
                 <span className="text-xl font-black text-slate-800 leading-none">{stats.referBack}</span>
                 <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">ส่งกลับสำเร็จ</p>
             </div>
+
             <div className="bg-white p-3 rounded-xl border border-rose-100 shadow-sm">
                  <div className="flex justify-between items-start mb-2">
-                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center"><Ambulance size={16} /></div>
+                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center">
+                        <Ambulance size={16} />
+                    </div>
                     <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
                 </div>
                 <span className="text-xl font-black text-slate-800 leading-none">{stats.emergency}</span>
@@ -264,6 +343,7 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
             </div>
         </div>
 
+        {/* --- Chart Section --- */}
         <Card className="border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
             <div className="p-4 border-b border-slate-50 flex items-center justify-between">
                 <h3 className="font-bold text-slate-800 text-xs flex items-center gap-2 uppercase tracking-wider">
@@ -275,7 +355,10 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
                      {isMounted ? (
                          <ResponsiveContainer width="100%" height="100%">
                            <LineChart data={RESPONSE_TREND}>
-                             <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px' }} labelStyle={{ color: '#64748b' }} />
+                             <Tooltip 
+                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px' }} 
+                                labelStyle={{ color: '#64748b' }}
+                             />
                              <Line type="monotone" dataKey="avg" stroke="#f59e0b" strokeWidth={3} dot={{ r: 3, fill: '#f59e0b', strokeWidth: 2, stroke: '#fff' }} />
                            </LineChart>
                          </ResponsiveContainer>
@@ -289,6 +372,7 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
                  </div>
             </div>
         </Card>
+
       </div>
     </div>
   );
