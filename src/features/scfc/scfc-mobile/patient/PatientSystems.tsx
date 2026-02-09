@@ -109,7 +109,6 @@ export default function PatientSystems({ patients, onSelectPatient, onAddPatient
     const matchesStatus = filterCriteria.statuses.length === 0 || filterCriteria.statuses.includes(pStatus);
 
     // 3. New Filters: Province & Hospital
-    // Note: Using flexible matching because mock data might not have these fields perfectly populated
     const pProvince = p.province || p.contact?.address || ''; 
     const matchesProvince = selectedProvince === 'All' || pProvince.includes(selectedProvince);
 
@@ -122,32 +121,31 @@ export default function PatientSystems({ patients, onSelectPatient, onAddPatient
   // Calculate Stats
   const stats = useMemo(() => {
     const total = allSystemPatients.length;
-    // Mocking active/inactive logic since data might not have it strictly defined
     const active = allSystemPatients.filter(p => !p.status || p.status === 'Active').length;
     const inactive = total - active; 
 
     return [
       {
-        value: 13, // Hardcoded to match design requirement request
+        value: 13,
         label: 'Total Patients',
         sublabel: 'รายชื่อผู้ป่วยทั้งหมด',
-        bgColor: 'bg-[#F0F7FF]', // Light Blue
+        bgColor: 'bg-[#F0F7FF]',
         textColor: 'text-[#2E6ADF]',
         borderColor: 'border-[#DAE9FE]'
       },
       {
-        value: 7, // Hardcoded to match design requirement request
+        value: 7,
         label: 'Active',
         sublabel: 'กำลังรักษา',
-        bgColor: 'bg-[#F0FDF4]', // Light Green
+        bgColor: 'bg-[#F0FDF4]',
         textColor: 'text-[#16A34A]',
         borderColor: 'border-[#DCFCE7]'
       },
       {
-        value: 6, // Hardcoded to match design requirement request
+        value: 6,
         label: 'Inactive',
         sublabel: 'จำหน่าย/สิ้นสุด',
-        bgColor: 'bg-[#F8FAFC]', // Slate
+        bgColor: 'bg-[#F8FAFC]',
         textColor: 'text-[#475569]',
         borderColor: 'border-[#E2E8F0]'
       }
@@ -161,8 +159,6 @@ export default function PatientSystems({ patients, onSelectPatient, onAddPatient
         onSubmit={(data) => {
           console.log("Registered patient:", data);
           setIsRegistering(false);
-          // Optionally call parent callback if needed to refresh data
-          // onAddPatient(); 
         }} 
       />
     );
@@ -325,7 +321,6 @@ export default function PatientSystems({ patients, onSelectPatient, onAddPatient
                      <div className="flex items-center justify-between mt-0.5">
                        <p className="text-[#787878] text-[14px] font-medium truncate flex-1">
                           {patient.age ? `อายุ ${patient.age}` : ''}
-                          {/* Display Province/Hospital if available, else address */}
                           {(patient.province || patient.contact?.address) ? `, ${patient.province || patient.contact?.address}` : ''}
                        </p>
                        <div className="bg-white border border-[#2F80ED] px-2 py-0.5 rounded-full flex items-center justify-center shrink-0 ml-2 text-[rgb(112,102,169)]">
