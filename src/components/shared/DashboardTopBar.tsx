@@ -5,8 +5,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { useRole, Role } from "../../context/RoleContext";
+} from "@/components/ui/dropdown-menu";
+import { useRole, Role } from "@/context/RoleContext";
 
 function Frame2() {
   return (
@@ -80,7 +80,7 @@ export default function DashboardTopBar({ onProfileClick, onNotificationClick }:
               <DropdownMenuItem 
                 key={role} 
                 onClick={() => setCurrentRole(role)}
-                className={currentRole === role ? "bg-slate-100 font-bold text-[#49358e]" : ""}
+                className={currentRole === role ? "bg-[#e8e6f6] font-bold text-[#49358e]" : "text-slate-600"}
               >
                 {roleLabels[role]}
               </DropdownMenuItem>
