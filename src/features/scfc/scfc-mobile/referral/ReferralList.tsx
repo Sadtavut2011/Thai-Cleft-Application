@@ -64,6 +64,7 @@ const REFERRAL_FILTER_SECTIONS = [
   }
 ];
 
+// Build a flat lookup map: sectionId -> optionId -> label
 const FILTER_LABEL_MAP: Record<string, Record<string, string>> = {};
 REFERRAL_FILTER_SECTIONS.forEach(section => {
   FILTER_LABEL_MAP[section.id] = {};
@@ -91,6 +92,7 @@ export function ReferralList({
 }: ReferralListProps) {
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
 
+  // --- Local filtering based on SuperFilter selections ---
   const localFilteredData = data.filter(ref => {
     const statusFilter = activeFilters['status'];
     const urgencyFilter = activeFilters['urgency'];
@@ -161,6 +163,7 @@ export function ReferralList({
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+        {/* Header List View */}
         <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
                 <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100">
@@ -173,6 +176,7 @@ export function ReferralList({
         </div>
 
         <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+            {/* Search and Filter Row */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
                  <div className="flex gap-2 w-full">
                      <div className="relative flex-1">
@@ -194,6 +198,7 @@ export function ReferralList({
                  </div>
             </div>
             
+            {/* Active Filters Display */}
             {Object.keys(activeFilters).length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {Object.entries(activeFilters).map(([sectionId, values]) => 
@@ -218,6 +223,7 @@ export function ReferralList({
                         onClick={() => onSelect(ref)}
                         className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer group relative"
                     >
+                         {/* Bottleneck Indicator */}
                          {ref.isBottleneck && (
                              <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1 z-10">
                                  <AlertCircle size={10} /> ล่าช้า
@@ -266,6 +272,7 @@ export function ReferralList({
             </div>
         </div>
 
+        {/* FAB */}
         <button 
             className="fixed bottom-[90px] right-4 w-14 h-14 z-50 p-0 border-none bg-transparent shadow-none hover:opacity-90 transition-opacity" 
             onClick={onCreate}
