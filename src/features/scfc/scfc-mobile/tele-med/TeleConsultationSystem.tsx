@@ -142,6 +142,7 @@ export default function TeleConsultationSystem({ onBack }: { onBack: () => void 
             onBack={() => setCurrentView('list')}
             onSave={(data) => {
                 console.log("Saved:", data);
+                // In a real app, you'd add the data to MOCK_SESSIONS or DB here
                 setCurrentView('list');
             }}
         />
