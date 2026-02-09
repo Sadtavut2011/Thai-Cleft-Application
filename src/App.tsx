@@ -12,26 +12,26 @@ import thaiCleftLogo from 'figma:asset/12ae20be12afdbbc28ab9f595255380bf78a4390.
 import { RoleProvider, useRole } from './context/RoleContext';
 
 // Role Dashboards
-import HospitalDashboard from './features/hospital/HospitalEntry';
-import SCFCEntry from './features/scfc/SCFCEntry';
-import PCUDashboard from './features/pcu/pcu-mobile/dashboard/MobileDashboard';
+import HospitalDashboard from './Role/hospital/HospitalEntry';
+import SCFCEntry from './Role/scfc/SCFCEntry';
+import PCUDashboard from './Role/pcu/pcu-mobile/dashboard/MobileDashboard';
 // Removed legacy PatientDashboard import
-import AdminDashboard from './features/admin/dashboard/AdminDashboard';
+import AdminDashboard from './Role/admin/dashboard/AdminDashboard';
 
 // Role Entry Points
-import CMEntry from './features/cm/CMEntry';
-import PCUEntry from './features/pcu/PCUEntry';
-import HospitalMobileLayout from './features/hospital/hospital-mobile/layout/MobileLayout';
+import CMEntry from './Role/cm/CMEntry';
+import PCUEntry from './Role/pcu/PCUEntry';
+import HospitalMobileLayout from './Role/hospital/hospital-mobile/layout/MobileLayout';
 // Imported directly from features/patient/mobile as requested
-import PatientMobileLayout from './features/Patient/patient-mobile/layout/MobileLayout';
+import PatientMobileLayout from './Role/Patient/patient-mobile/layout/MobileLayout';
 
 // Features - Patient (Still used by other roles?)
-import { NewPatientList } from './features/cm/cm-mobile/page/NewPatientList';
-import PatientDirectory from './features/cm/cm-mobile/patient/PatientDirectory';
-import { PatientDetailView } from './features/cm/cm-mobile/patient/detail/PatientDetailView';
-import { AddMedicalRecordForm } from './features/cm/cm-mobile/patient/detail/AddMedicalRecordForm';
-import NotificationPage from './features/cm/cm-mobile/page/NotificationPage';
-import UserProfileMenu from './features/cm/cm-mobile/page/UserProfileMenu';
+import { NewPatientList } from './Role/cm/cm-mobile/page/NewPatientList';
+import PatientDirectory from './Role/cm/cm-mobile/patient/PatientDirectory';
+import { PatientDetailView } from './Role/cm/cm-mobile/patient/detail/PatientDetailView';
+import { AddMedicalRecordForm } from './Role/cm/cm-mobile/patient/detail/AddMedicalRecordForm';
+import NotificationPage from './Role/cm/cm-mobile/page/NotificationPage';
+import UserProfileMenu from './Role/cm/cm-mobile/page/UserProfileMenu';
 
 import StandardPageLayout from './components/shared/layout/StandardPageLayout';
 import { PATIENTS_DATA } from './data/patientData';
