@@ -1,16 +1,74 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Clock,
   User,
   Smartphone,
   Video,
   ArrowLeft,
-  Search
+  Search,
+  MapPin,
+  Building2,
+  ChevronDown,
+  Filter
 } from "lucide-react";
 import { cn } from "../../../../components/ui/utils";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
 import { TeleSession, TeleStatus } from "./TeleDetailMobile";
+import { SuperFilter } from "../components/SuperFilter";
+
+// --- Tele-med specific filter sections ---
+const TELE_FILTER_SECTIONS = [
+  {
+    id: 'status',
+    title: 'สถานะ',
+    options: [
+      { id: 'Active', label: 'กำลังตรวจ' },
+      { id: 'Waiting', label: 'รอตรวจ' },
+      { id: 'Scheduled', label: 'นัดหมายแล้ว' },
+      { id: 'Delayed', label: 'ล่าช้า' },
+      { id: 'Tech Issue', label: 'ปัญหาเทคนิค' },
+      { id: 'Completed', label: 'เสร็จสิ้น' },
+    ]
+  },
+  {
+    id: 'urgency',
+    title: 'ความเร่งด่วน',
+    options: [
+      { id: 'Normal', label: 'ปกติ' },
+      { id: 'Urgent', label: 'เร่งด่วน' },
+    ]
+  },
+  {
+    id: 'platform',
+    title: 'แพลตฟอร์ม',
+    options: [
+      { id: 'Zoom', label: 'Zoom' },
+      { id: 'MS Teams', label: 'MS Teams' },
+      { id: 'Hospital Link', label: 'Hospital Link' },
+    ]
+  },
+  {
+    id: 'sourceUnit',
+    title: 'หน่วยบริการ',
+    options: [
+      { id: 'รพ.สต. บ้านหนองหอย', label: 'รพ.สต. บ้านหนองหอย' },
+      { id: 'รพ.ฝาง', label: 'รพ.ฝาง' },
+      { id: 'รพ.ลำพูน', label: 'รพ.ลำพูน' },
+      { id: 'รพ.มหาราชนครเชียงใหม่', label: 'รพ.มหาราชนครเชียงใหม่' },
+    ]
+  }
+];
+
+// Build a flat lookup map: sectionId -> optionId -> label
+const FILTER_LABEL_MAP: Record<string, Record<string, string>> = {};
+TELE_FILTER_SECTIONS.forEach(section => {
+  FILTER_LABEL_MAP[section.id] = {};
+  section.options.forEach(opt => {
+    FILTER_LABEL_MAP[section.id][opt.id] = opt.label;
+  });
+});
 
 interface TeleListProps {
   data: TeleSession[];
@@ -27,8 +85,39 @@ export function TeleList({
   onBack, 
   searchQuery, 
   onSearchChange,
-  onCreate
+  onCreate,
 }: TeleListProps) {
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
+
+  // --- Local filtering based on SuperFilter selections ---
+  const localFilteredData = data.filter(session => {
+    const statusFilter = activeFilters['status'];
+    const urgencyFilter = activeFilters['urgency'];
+    const platformFilter = activeFilters['platform'];
+    const sourceUnitFilter = activeFilters['sourceUnit'];
+
+    const matchesStatus = !statusFilter?.length || statusFilter.includes(session.status);
+    const matchesUrgency = !urgencyFilter?.length || urgencyFilter.includes(session.urgency);
+    const matchesPlatform = !platformFilter?.length || platformFilter.includes(session.platform);
+    const matchesSourceUnit = !sourceUnitFilter?.length || sourceUnitFilter.includes(session.sourceUnit);
+
+    return matchesStatus && matchesUrgency && matchesPlatform && matchesSourceUnit;
+  });
+
+  const handleSuperFilterApply = (filters: Record<string, string[]>) => {
+    const cleaned: Record<string, string[]> = {};
+    Object.entries(filters).forEach(([key, values]) => {
+      if (values.length > 0) cleaned[key] = values;
+    });
+    setActiveFilters(cleaned);
+  };
+
+  const handleRemoveFilterChip = (sectionId: string, valueId: string) => {
+    const newFilters = { ...activeFilters, [sectionId]: activeFilters[sectionId].filter(v => v !== valueId) };
+    if (newFilters[sectionId].length === 0) delete newFilters[sectionId];
+    setActiveFilters(newFilters);
+  };
+
   const getStatusStyle = (status: TeleStatus) => {
     switch (status) {
       case 'Active': return 'bg-[#EEEBFF] text-[#7367f0]';
@@ -67,22 +156,47 @@ export function TeleList({
         </div>
 
         <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input 
-                    placeholder="ค้นหาชื่อ, HN..." 
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-10 bg-white border-slate-200 rounded-xl h-11 text-sm shadow-sm focus:ring-teal-500" 
-                />
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                 <div className="flex gap-2 w-full">
+                     <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Input 
+                            placeholder="ค้นหาชื่อ, HN..." 
+                            value={searchQuery}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            className="pl-10 bg-white border-slate-200 rounded-xl h-12 text-sm shadow-sm focus:ring-teal-500" 
+                        />
+                    </div>
+                     
+                     <SuperFilter 
+                        sections={TELE_FILTER_SECTIONS}
+                        activeFilters={activeFilters}
+                        onApply={handleSuperFilterApply}
+                        onClear={() => setActiveFilters({})}
+                     />
+                 </div>
             </div>
+
+            {/* Active Filters Display */}
+            {Object.keys(activeFilters).length > 0 && (
+                <div className="flex flex-wrap gap-2 px-1 mb-1">
+                    {Object.entries(activeFilters).map(([sectionId, values]) => 
+                        values.map(v => (
+                            <span key={`${sectionId}-${v}`} className="bg-teal-50 text-teal-700 px-2 py-1 rounded text-xs font-bold border border-teal-100 flex items-center gap-1">
+                                {FILTER_LABEL_MAP[sectionId]?.[v] || v}
+                                <button onClick={() => handleRemoveFilterChip(sectionId, v)}>×</button>
+                            </span>
+                        ))
+                    )}
+                </div>
+            )}
 
             <div className="flex items-center justify-between px-1">
                   <h3 className="font-bold text-slate-700 text-lg text-[14px]">รายการ Tele-Consult</h3>
-                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{data.length} รายการ</span>
+                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{localFilteredData.length} รายการ</span>
             </div>
             <div className="space-y-3">
-                {data.map((session) => (
+                {localFilteredData.map((session) => (
                     <Card 
                         key={session.id}
                         onClick={() => onSelect(session)}
@@ -143,7 +257,7 @@ export function TeleList({
                 ))}
             </div>
         </div>
-
+        
         {/* FAB */}
         <button 
             className="fixed bottom-[90px] right-4 w-14 h-14 z-50 p-0 border-none bg-transparent shadow-none hover:opacity-90 transition-opacity" 

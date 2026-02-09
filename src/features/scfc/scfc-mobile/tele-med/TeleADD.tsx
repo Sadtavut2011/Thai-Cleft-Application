@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   ArrowLeft, 
   Search, 
@@ -14,7 +14,7 @@ import {
   XCircle, 
   AlertCircle,
   ChevronRight,
-  ShieldCheck, 
+  ShieldCheck,
   Info,
   Loader2,
   Trash2,
@@ -83,7 +83,39 @@ export function TeleADD({ onBack, onSave, initialData }: TeleADDProps) {
   const [requestType, setRequestType] = useState<string>(initialData?.requestType || "direct");
   const [meetingUrl, setMeetingUrl] = useState(initialData?.meetingUrl || "");
 
+  // Drag to scroll logic
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const onMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Scroll-fast multiplier
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
   const handleSearch = (query?: string) => {
+    // If dragging, prevent click event
+    if (isDragging) return;
+
     const term = query || searchQuery;
     if (!term) return;
     
@@ -131,6 +163,12 @@ export function TeleADD({ onBack, onSave, initialData }: TeleADDProps) {
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+      {/* CSS Hack to hide Sidebar Navigation */}
+      <style>{`
+        .fixed.bottom-0.left-0.w-full.bg-white.z-50.flex-row.items-center.flex {
+          display: none !important;
+        }
+      `}</style>
       
       {/* 1. Sticky Header - Matches TeleList/TeleConsultationSystem */}
       <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
@@ -214,13 +252,25 @@ export function TeleADD({ onBack, onSave, initialData }: TeleADDProps) {
                     </h3>
                  </div>
                  
-                 <ScrollArea className="w-full whitespace-nowrap -mx-4 px-4">
-                    <div className="flex flex-col gap-3">
+                 {/* ScrollArea replaced with custom div for drag-to-scroll */}
+                 <div 
+                    ref={scrollContainerRef}
+                    className="w-full overflow-x-auto whitespace-nowrap -mx-4 px-4 pb-2 cursor-grab active:cursor-grabbing no-scrollbar"
+                    onMouseDown={onMouseDown}
+                    onMouseLeave={onMouseLeave}
+                    onMouseUp={onMouseUp}
+                    onMouseMove={onMouseMove}
+                    style={{ scrollBehavior: isDragging ? 'auto' : 'smooth' }}
+                 >
+                    <div className="inline-flex gap-3">
                        {DUE_PATIENTS.map((p) => (
                          <div 
                           key={p.id} 
-                          className="w-full bg-white border border-slate-200 shadow-sm rounded-xl p-4 active:scale-95 transition-transform"
-                          onClick={() => handleSearch(p.hn)}
+                          className="w-[280px] shrink-0 bg-white border border-slate-200 shadow-sm rounded-xl p-4 active:scale-95 transition-transform select-none"
+                          onClick={(e) => {
+                             // Only trigger if not dragging (simple heuristic: if mouse didn't move much)
+                             handleSearch(p.hn)
+                          }}
                          >
                               <div className="flex justify-between items-start mb-3">
                                  <div className="bg-teal-50 p-2 rounded-lg text-teal-600">
@@ -237,17 +287,16 @@ export function TeleADD({ onBack, onSave, initialData }: TeleADDProps) {
                                  <h4 className="font-bold text-slate-900 text-sm truncate">{p.name}</h4>
                                  <p className="text-xs text-slate-500">HN: {p.hn}</p>
                               </div>
-                              <p className="text-[11px] text-slate-600 line-clamp-2 bg-slate-50 p-2 rounded-lg border border-slate-100 mb-3 h-[46px]">
+                              <p className="text-[11px] text-slate-600 line-clamp-2 bg-slate-50 p-2 rounded-lg border border-slate-100 mb-3 h-[46px] whitespace-normal">
                                 {p.treatment}
                               </p>
-                              <Button variant="ghost" className="w-full h-8 bg-teal-50 text-teal-700 hover:bg-teal-100 text-xs font-bold rounded-lg">
+                              <Button variant="ghost" className="w-full h-8 bg-teal-50 text-teal-700 hover:bg-teal-100 text-xs font-bold rounded-lg pointer-events-none">
                                     สร้างนัดหมาย
                               </Button>
                          </div>
                        ))}
                     </div>
-                    <ScrollBar orientation="horizontal" className="hidden" />
-                 </ScrollArea>
+                 </div>
               </div>
             )}
           </div>
@@ -391,11 +440,21 @@ export function TeleADD({ onBack, onSave, initialData }: TeleADDProps) {
               </Card>
 
               {/* Submit Section */}
-              <div className="pt-2 pb-8">
+              <>
+                <div className="h-32" />
+                <div className="fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 p-4 z-50 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.05)] pb-8 flex items-center gap-3">
+                  <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={onBack} 
+                      className="flex-1 h-12 text-slate-600 border-slate-200 hover:bg-slate-50 font-bold text-sm rounded-xl"
+                  >
+                      ยกเลิก
+                  </Button>
                   <Button 
                       type="submit" 
                       disabled={isSaving}
-                      className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-teal-600/20 mb-3"
+                      className="flex-[2] h-12 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-teal-600/20"
                   >
                       {isSaving ? (
                         <>
@@ -409,15 +468,8 @@ export function TeleADD({ onBack, onSave, initialData }: TeleADDProps) {
                         </>
                       )}
                   </Button>
-                  <Button 
-                      type="button" 
-                      variant="ghost" 
-                      onClick={onBack} 
-                      className="w-full h-10 text-slate-500 hover:bg-slate-100 font-medium text-xs rounded-lg"
-                  >
-                      ยกเลิก
-                  </Button>
-              </div>
+                </div>
+              </>
           </form>
         )}
       </div>

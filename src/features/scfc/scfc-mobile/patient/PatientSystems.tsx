@@ -10,6 +10,7 @@ import RegistrationContainer from '../../../cm/cm-mobile/patient/registration/Re
 import imgFrame1171276583 from "figma:asset/7f12ea1300756f144a0fb5daaf68dbfc01103a46.png";
 
 // --- Mock Data for System Patients (Simulating DB) ---
+// These patients exist in the system but might not be passed via props yet
 const SYSTEM_EXTRA_PATIENTS: any[] = [];
 
 // Mock Data for Filters
@@ -77,23 +78,27 @@ export default function PatientSystems({ patients, onSelectPatient, onAddPatient
     if (!isDragging || !scrollRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 2;
+    const walk = (x - startX) * 2; // Scroll-fast
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
   
+  // Combine props patients with our mock system patients
   const allSystemPatients = useMemo(() => {
+    // Avoid duplicates if props already contain them
     const propIds = new Set(patients.map(p => p.hn || p.id));
     const extras = SYSTEM_EXTRA_PATIENTS.filter(p => !propIds.has(p.id));
     return [...patients, ...extras];
   }, [patients]);
 
   const filteredPatients = allSystemPatients.filter(p => {
+    // 1. Search Logic
     const matchesSearch = 
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (p.hn && p.hn.includes(searchTerm)) ||
       (p.cid && String(p.cid).includes(searchTerm)) ||
       (p.id && String(p.id).includes(searchTerm));
 
+    // 2. Filter Logic (Existing)
     const pDiagnosis = p.medicalCondition || "Cleft Lip - left - microform"; 
     const matchesDiagnosis = filterCriteria.diagnoses.length === 0 || filterCriteria.diagnoses.some(d => pDiagnosis.includes(d));
 
@@ -103,6 +108,7 @@ export default function PatientSystems({ patients, onSelectPatient, onAddPatient
     const pStatus = p.status || "Active";
     const matchesStatus = filterCriteria.statuses.length === 0 || filterCriteria.statuses.includes(pStatus);
 
+    // 3. New Filters: Province & Hospital
     const pProvince = p.province || p.contact?.address || ''; 
     const matchesProvince = selectedProvince === 'All' || pProvince.includes(selectedProvince);
 
@@ -112,6 +118,7 @@ export default function PatientSystems({ patients, onSelectPatient, onAddPatient
     return matchesSearch && matchesDiagnosis && matchesRights && matchesStatus && matchesProvince && matchesHospital;
   });
 
+  // Calculate Stats
   const stats = useMemo(() => {
     const total = allSystemPatients.length;
     const active = allSystemPatients.filter(p => !p.status || p.status === 'Active').length;
