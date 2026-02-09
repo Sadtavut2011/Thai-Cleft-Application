@@ -104,6 +104,8 @@ export default function TeleConsultationSystem({ onBack }: { onBack: () => void 
   const [selectedHospital, setSelectedHospital] = useState("ทุกหน่วยงาน");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isProvinceOpen, setIsProvinceOpen] = useState(false);
+  const [isHospitalOpen, setIsHospitalOpen] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -118,17 +120,8 @@ export default function TeleConsultationSystem({ onBack }: { onBack: () => void 
   };
 
   const filteredSessions = MOCK_SESSIONS.filter(s => {
-      const matchesSearch = s.patientName.includes(searchQuery) || s.hn.includes(searchQuery);
-      // Simplified mock filter logic
-      const matchesProvince = selectedProvince === 'ทุกจังหวัด' || s.sourceUnit.includes(selectedProvince); 
-      const matchesHospital = selectedHospital === 'ทุกหน่วยงาน' || s.sourceUnit === selectedHospital;
-      
-      const matchesStatus = filterStatus === 'all' || 
-          (filterStatus === 'active' && s.status === 'Active') ||
-          (filterStatus === 'waiting' && s.status === 'Waiting') ||
-          (filterStatus === 'issue' && s.status === 'Tech Issue');
-      
-      return matchesSearch && matchesStatus && matchesProvince && matchesHospital;
+      const matchesSearch = !searchQuery || s.patientName.includes(searchQuery) || s.hn.includes(searchQuery);
+      return matchesSearch;
   });
 
   const handleSelectSession = (session: TeleSession) => {
@@ -203,88 +196,92 @@ export default function TeleConsultationSystem({ onBack }: { onBack: () => void 
          
          {/* Filter Section */}
          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
-             <div className="flex gap-2 w-full">
-                 <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <Input 
-                      placeholder="ค้นหาชื่อ, HN..." 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-12 bg-[#F3F4F6] border-transparent focus:bg-white transition-all rounded-xl h-12 text-base shadow-sm" 
-                    />
-                 </div>
-                 
-                 <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                  <PopoverTrigger asChild>
-                    <button className="h-12 w-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-slate-50 transition-colors shrink-0 shadow-sm text-slate-500">
-                       <Filter size={20} />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-slate-100">
-                      <div className="flex flex-col">
-                          {FILTER_OPTIONS.map((option) => (
-                              <button
-                                  key={option.id}
-                                  onClick={() => handleFilterSelect(option.id, () => setIsFilterOpen(false))}
-                                  className={cn(
-                                      "w-full text-left px-3 py-3 text-[16px] font-medium transition-colors rounded-lg",
-                                      filterStatus === option.id ? "bg-slate-50 text-[#7367f0]" : "text-slate-700 hover:bg-slate-50"
-                                  )}
-                              >
-                                  {option.label}
-                              </button>
-                          ))}
-                          <div className="my-1 border-t border-slate-100" />
-                          <button 
-                            onClick={() => setIsFilterOpen(false)}
-                            className="w-full text-left px-3 py-3 text-[16px] font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            ยกเลิก
-                          </button>
-                      </div>
-                  </PopoverContent>
-                </Popover>
-             </div>
-
+             
              {/* Province & Hospital Filter */}
              <div className="grid grid-cols-2 gap-3">
-                <div className="relative w-full">
-                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
-                       <MapPin size={14} />
-                    </div>
-                    <select 
-                      value={selectedProvince}
-                      onChange={(e) => setSelectedProvince(e.target.value)}
-                      className="w-full h-[36px] pl-8 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500/20 truncate"
-                    >
-                      <option value="ทุกจังหวัด">ทุกจังหวัด</option>
-                      {PROVINCES.map(p => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
-                    </select>
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                       <ChevronDown size={14} />
-                    </div>
-                </div>
+                {/* Province Filter */}
+                <Popover open={isProvinceOpen} onOpenChange={setIsProvinceOpen}>
+                    <PopoverTrigger asChild>
+                        <button className="relative w-full h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                                 <MapPin size={18} />
+                             </div>
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                                 {selectedProvince === 'ทุกจังหวัด' ? 'ทุกจังหวัด' : selectedProvince}
+                             </span>
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                 <ChevronDown size={18} />
+                             </div>
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                         <div className="flex flex-col">
+                             <button
+                                  onClick={() => { setSelectedProvince('ทุกจังหวัด'); setIsProvinceOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedProvince === 'ทุกจังหวัด' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  ทุกจังหวัด
+                              </button>
+                             {PROVINCES.filter(p => p !== 'ทุกจังหวัด').map(p => (
+                               <button
+                                  key={p}
+                                  onClick={() => { setSelectedProvince(p); setIsProvinceOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedProvince === p ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  {p}
+                              </button>
+                             ))}
+                         </div>
+                    </PopoverContent>
+                </Popover>
 
-                <div className="relative w-full">
-                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
-                       <Building2 size={14} />
-                    </div>
-                    <select 
-                      value={selectedHospital}
-                      onChange={(e) => setSelectedHospital(e.target.value)}
-                      className="w-full h-[36px] pl-8 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500/20 truncate"
-                    >
-                      <option value="ทุกหน่วยงาน">ทุกหน่วยงาน</option>
-                      {HOSPITALS.map(h => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                       <ChevronDown size={14} />
-                    </div>
-                </div>
+                {/* Hospital Filter */}
+                <Popover open={isHospitalOpen} onOpenChange={setIsHospitalOpen}>
+                    <PopoverTrigger asChild>
+                        <button className="relative w-full h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                                 <Building2 size={18} />
+                             </div>
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                                 {selectedHospital === 'ทุกหน่วยงาน' ? 'ทุกหน่วยงาน' : selectedHospital}
+                             </span>
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                 <ChevronDown size={18} />
+                             </div>
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                         <div className="flex flex-col">
+                             <button
+                                  onClick={() => { setSelectedHospital('ทุกหน่วยงาน'); setIsHospitalOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedHospital === 'ทุกหน่วยงาน' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  ทุกหน่วยงาน
+                              </button>
+                             {HOSPITALS.filter(h => h !== 'ทุกหน่วยงาน').map(h => (
+                               <button
+                                  key={h}
+                                  onClick={() => { setSelectedHospital(h); setIsHospitalOpen(false); }}
+                                  className={cn(
+                                      "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
+                                      selectedHospital === h ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                  )}
+                              >
+                                  {h}
+                              </button>
+                             ))}
+                         </div>
+                    </PopoverContent>
+                </Popover>
              </div>
 
              <div className="pt-1">
