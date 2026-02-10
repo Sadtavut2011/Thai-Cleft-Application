@@ -105,6 +105,7 @@ export function FundList({
   });
 
   const handleSuperFilterApply = (filters: Record<string, string[]>) => {
+    // Clean up empty arrays
     const cleaned: Record<string, string[]> = {};
     Object.entries(filters).forEach(([key, values]) => {
       if (values.length > 0) cleaned[key] = values;
@@ -123,7 +124,7 @@ export function FundList({
           case 'Pending': return 'text-amber-600 bg-amber-50';
           case 'Approved': return 'text-blue-600 bg-blue-50';
           case 'Rejected': return 'text-rose-600 bg-rose-50';
-          case 'Received': return 'text-purple-600 bg-purple-50';
+          case 'Received': return 'text-[#49358E] bg-[#F4F0FF]';
           case 'Disbursed': return 'text-emerald-600 bg-emerald-50';
           default: return 'text-slate-600 bg-slate-50';
       }
@@ -144,15 +145,15 @@ export function FundList({
     <div className="pb-4">
         {/* Search and Filter Row */}
         {onSearchChange && (
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3 mb-4 mx-1">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-[#E3E0F0] flex flex-col gap-3 mb-4 mx-1">
                  <div className="flex gap-2 w-full">
                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7066A9]" />
                         <Input 
                             placeholder="ค้นหาชื่อ, HN..." 
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="pl-10 bg-white border-slate-200 rounded-xl h-12 text-sm shadow-sm focus:ring-teal-500" 
+                            className="pl-10 bg-[#F4F0FF]/30 border-[#E3E0F0] rounded-xl h-12 text-sm shadow-sm focus:ring-[#7066A9] focus:border-[#7066A9]" 
                         />
                     </div>
                      
@@ -171,9 +172,9 @@ export function FundList({
             <div className="flex flex-wrap gap-2 px-1 mb-3">
                 {Object.entries(activeFilters).map(([sectionId, values]) => 
                     values.map(v => (
-                        <span key={`${sectionId}-${v}`} className="bg-teal-50 text-teal-700 px-2 py-1 rounded text-xs font-bold border border-teal-100 flex items-center gap-1">
+                        <span key={`${sectionId}-${v}`} className="bg-[#F4F0FF] text-[#49358E] px-2 py-1 rounded text-xs font-bold border border-[#E3E0F0] flex items-center gap-1">
                             {FILTER_LABEL_MAP[sectionId]?.[v] || v}
-                            <button onClick={() => handleRemoveFilterChip(sectionId, v)}>×</button>
+                            <button onClick={() => handleRemoveFilterChip(sectionId, v)} className="hover:text-[#37286A]">×</button>
                         </span>
                     ))
                 )}
@@ -181,8 +182,8 @@ export function FundList({
         )}
 
         <div className="flex items-center justify-between mb-3 px-1">
-            <h3 className="font-bold text-slate-700 text-sm">รายการขอทุน</h3>
-            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{localFilteredData.length} รายการ</span>
+            <h3 className="font-bold text-[#37286A] text-sm">รายการขอทุน</h3>
+            <span className="text-[10px] font-bold text-[#7066A9] bg-[#F4F0FF] px-2 py-0.5 rounded-full border border-[#E3E0F0]">{localFilteredData.length} รายการ</span>
         </div>
         
         <div className="space-y-3">
@@ -190,18 +191,18 @@ export function FundList({
                 <Card 
                     key={req.id}
                     onClick={() => onSelect(req)}
-                    className="bg-white border-slate-200 shadow-sm rounded-xl p-3 active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden group"
+                    className="bg-white border-[#E3E0F0] shadow-sm rounded-xl p-3 active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden group hover:border-[#D2CEE7] hover:shadow-md hover:shadow-[#49358E]/5"
                 >
                     <div className="flex flex-col gap-1">
                         {/* Header Row */}
                         <div className="flex justify-between items-start">
                             <div className="flex-1 min-w-0 pr-2">
-                                <h3 className="font-['IBM_Plex_Sans_Thai'] font-bold text-[#5e5873] text-[14px] leading-[20px] truncate">
-                                    {req.patientName} <span className="ml-1 font-normal text-[#6a7282]">{req.hn}</span>
+                                <h3 className="font-['IBM_Plex_Sans_Thai'] font-bold text-[#37286A] text-[14px] leading-[20px] truncate">
+                                    {req.patientName} <span className="ml-1 font-normal text-[#7066A9]">{req.hn}</span>
                                 </h3>
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                    <FileText className="w-[14px] h-[14px] text-[#6a7282]" />
-                                    <span className="font-['IBM_Plex_Sans_Thai'] text-[#6a7282] text-[12px] leading-[16px] truncate">
+                                    <FileText className="w-[14px] h-[14px] text-[#7066A9]" />
+                                    <span className="font-['IBM_Plex_Sans_Thai'] text-[#7066A9] text-[12px] leading-[16px] truncate">
                                         {req.fundType}
                                     </span>
                                 </div>
@@ -215,16 +216,16 @@ export function FundList({
                         </div>
 
                         {/* Details Row */}
-                        <div className="flex items-center justify-between w-full mt-1.5 pt-1.5 border-t border-dashed border-gray-100">
+                        <div className="flex items-center justify-between w-full mt-1.5 pt-1.5 border-t border-dashed border-[#E3E0F0]">
                             <div className="flex items-center gap-2">
-                                <Banknote className="w-[16px] h-[16px] text-[#7367f0]" />
-                                <span className="font-['IBM_Plex_Sans_Thai'] font-medium text-[#7367f0] text-[14px]">
+                                <Banknote className="w-[16px] h-[16px] text-[#49358E]" />
+                                <span className="font-['IBM_Plex_Sans_Thai'] font-medium text-[#49358E] text-[14px]">
                                     {req.amount.toLocaleString()} บาท
                                 </span>
                             </div>
                             <div className="flex items-center gap-1">
-                                <Clock className="w-3 h-3 text-gray-400" />
-                                <span className="font-['IBM_Plex_Sans_Thai'] text-[#6a7282] text-[12px]">
+                                <Clock className="w-3 h-3 text-[#D2CEE7]" />
+                                <span className="font-['IBM_Plex_Sans_Thai'] text-[#7066A9] text-[12px]">
                                     {req.requestDate}
                                 </span>
                             </div>

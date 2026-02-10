@@ -30,6 +30,10 @@ import { ResponsiveContainer, BarChart, Bar, Tooltip, Cell, PieChart, Pie } from
 import { AppointmentList } from "./AppointmentList";
 import { AppointmentDetailMobile } from "./AppointmentDetailMobile";
 
+// ── Purple Theme Palette ──
+// Primary:   #49358E (dark), #7066A9 (medium), #37286A (darker)
+// Light:     #E3E0F0, #D2CEE7, #F4F0FF (lightest)
+
 // --- Types & Mock Data ---
 
 export interface Appointment {
@@ -155,7 +159,7 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
   };
 
   const PIE_DATA = [
-    { name: 'ยืนยันแล้ว', value: stats.confirmed, color: '#0d9488' },
+    { name: 'ยืนยันแล้ว', value: stats.confirmed, color: '#49358E' },
     { name: 'รอยืนยัน', value: stats.pending, color: '#f59e0b' },
     { name: 'ขาดนัด', value: stats.missed, color: '#ef4444' },
   ];
@@ -197,57 +201,47 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
 
   // --- Dashboard View ---
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+    <div className="bg-[#F4F0FF]/40 min-h-screen flex flex-col font-sans pb-20">
       
-      {/* Header */}
-      <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
+      {/* Header - Purple */}
+      <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
           {onBack && (
-            <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100">
-              <ArrowLeft size={20} />
+            <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+              <ArrowLeft size={24} />
             </button>
           )}
-          <div>
-
-            <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">นัดหมาย</h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-            <div className="bg-teal-50 text-teal-600 p-1.5 rounded-lg">
-                <ShieldAlert size={18} />
-            </div>
-        </div>
+          <h1 className="text-white text-lg font-bold">นัดหมาย</h1>
       </div>
 
       <div className="p-4 space-y-5 flex-1 overflow-y-auto">
         
-        {/* --- Filter Section (Copied Style) --- */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+        {/* --- Filter Section --- */}
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-[#E3E0F0] flex flex-col gap-3">
              
              {/* Province and Hospital Filters */}
              <div className="flex gap-2">
                 {/* Province Filter */}
                 <Popover open={isProvinceOpen} onOpenChange={setIsProvinceOpen}>
                     <PopoverTrigger asChild>
-                        <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                        <button className="relative flex-1 h-[44px] bg-[#F4F0FF]/50 border border-[#E3E0F0] rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-[#7066A9]/30 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <MapPin size={18} />
                              </div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-[#37286A] truncate">
                                  {selectedProvince === 'All' ? 'ทุกจังหวัด' : selectedProvince}
                              </span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <ChevronDown size={18} />
                              </div>
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-[#E3E0F0] max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
                              <button
                                   onClick={() => { setSelectedProvince('All'); setIsProvinceOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedProvince === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedProvince === 'All' ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   ทุกจังหวัด
@@ -258,7 +252,7 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
                                   onClick={() => { setSelectedProvince(p); setIsProvinceOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedProvince === p ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedProvince === p ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   {p}
@@ -271,25 +265,25 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
                 {/* Hospital Filter */}
                 <Popover open={isHospitalOpen} onOpenChange={setIsHospitalOpen}>
                     <PopoverTrigger asChild>
-                        <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                        <button className="relative flex-1 h-[44px] bg-[#F4F0FF]/50 border border-[#E3E0F0] rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-[#7066A9]/30 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <Building2 size={18} />
                              </div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-[#37286A] truncate">
                                  {selectedHospital === 'All' ? 'ทุกโรงพยาบาล' : selectedHospital}
                              </span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <ChevronDown size={18} />
                              </div>
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-[#E3E0F0] max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
                              <button
                                   onClick={() => { setSelectedHospital('All'); setIsHospitalOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedHospital === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedHospital === 'All' ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   ทุกโรงพยาบาล
@@ -300,7 +294,7 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
                                   onClick={() => { setSelectedHospital(h); setIsHospitalOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedHospital === h ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedHospital === h ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   {h}
@@ -315,7 +309,7 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
             <div className="pt-1">
                 <Button 
                     onClick={() => setCurrentView('list')}
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-12 text-base font-bold shadow-md shadow-teal-100 flex items-center justify-center gap-2"
+                    className="w-full bg-[#49358E] hover:bg-[#37286A] text-white rounded-xl h-12 text-base font-bold shadow-md shadow-[#49358E]/20 flex items-center justify-center gap-2 transition-all"
                 >
                     ดูรายละเอียด
                     <ArrowRight size={18} />
@@ -325,34 +319,34 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
 
         {/* --- Stats Summary --- */}
         <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white p-3 rounded-xl border border-teal-100 shadow-sm flex flex-col items-center justify-center text-center">
-                <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-1">
+            <div className="bg-white p-3 rounded-xl border border-[#E3E0F0] shadow-sm flex flex-col items-center justify-center text-center">
+                <div className="w-8 h-8 rounded-full bg-[#F4F0FF] text-[#49358E] flex items-center justify-center mb-1">
                     <CheckCircle2 size={16} />
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.confirmed}</span>
-                <span className="text-[9px] font-bold text-slate-400 mt-1">ยืนยันแล้ว</span>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.confirmed}</span>
+                <span className="text-[9px] font-bold text-[#7066A9] mt-1">ยืนยันแล้ว</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-amber-100 shadow-sm flex flex-col items-center justify-center text-center">
                 <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-1">
                     <Clock size={16} />
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.pending}</span>
-                <span className="text-[9px] font-bold text-slate-400 mt-1">รอยืนยัน</span>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.pending}</span>
+                <span className="text-[9px] font-bold text-[#7066A9] mt-1">รอยืนยัน</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-rose-100 shadow-sm flex flex-col items-center justify-center text-center">
                 <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-1">
                     <AlertCircle size={16} />
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.missed}</span>
-                <span className="text-[9px] font-bold text-slate-400 mt-1">ขาดนัด</span>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.missed}</span>
+                <span className="text-[9px] font-bold text-[#7066A9] mt-1">ขาดนัด</span>
             </div>
         </div>
 
         {/* --- Chart Section --- */}
-        <Card className="border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-slate-50 flex items-center justify-between">
-                <h3 className="font-bold text-slate-800 text-xs flex items-center gap-2 uppercase tracking-wider">
-                    <PieChartIcon className="text-teal-600" size={14} /> ภาพรวมนัดหมาย
+        <Card className="border-[#E3E0F0] shadow-sm bg-white rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-[#F4F0FF] flex items-center justify-between">
+                <h3 className="font-bold text-[#37286A] text-xs flex items-center gap-2 uppercase tracking-wider">
+                    <PieChartIcon className="text-[#7066A9]" size={14} /> ภาพรวมนัดหมาย
                 </h3>
             </div>
             <div className="p-4 flex items-center justify-between">
@@ -378,7 +372,7 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
                        </ResponsiveContainer>
                      )}
                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-xs font-black text-slate-800">{stats.total}</span>
+                        <span className="text-xs font-black text-[#37286A]">{stats.total}</span>
                      </div>
                  </div>
                  <div className="flex-1 pl-4 space-y-2">
@@ -386,9 +380,9 @@ export function AppointmentSystem({ onBack }: { onBack?: () => void }) {
                        <div key={item.name} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                             <span className="text-[10px] font-bold text-slate-500">{item.name}</span>
+                             <span className="text-[10px] font-bold text-[#7066A9]">{item.name}</span>
                           </div>
-                          <span className="text-xs font-black text-slate-800">{stats.total > 0 ? Math.round((item.value / stats.total) * 100) : 0}%</span>
+                          <span className="text-xs font-black text-[#37286A]">{stats.total > 0 ? Math.round((item.value / stats.total) * 100) : 0}%</span>
                        </div>
                      ))}
                  </div>

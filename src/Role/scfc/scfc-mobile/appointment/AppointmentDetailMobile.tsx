@@ -18,30 +18,32 @@ import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import { Appointment } from "./AppointmentSystem";
 
+// ── Purple Theme Palette ──
+// Primary:   #49358E (dark), #7066A9 (medium), #37286A (darker)
+// Light:     #E3E0F0, #D2CEE7, #F4F0FF (lightest)
+
 export function AppointmentDetailMobile({ appointment, onBack }: { appointment: Appointment, onBack: () => void }) {
     return (
-        <div className="flex flex-col h-full bg-slate-50">
-            <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center gap-3 shadow-sm">
-                <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100">
-                    <ArrowLeft size={20} />
+        <div className="flex flex-col h-full bg-[#F4F0FF]/40">
+            {/* Header - Purple */}
+            <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
+                <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
-                <div>
-                    <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">รายละเอียดนัดหมาย</h1>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{appointment.id}</p>
-                </div>
+                <h1 className="text-white text-lg font-bold">รายละเอียดนัดหมาย</h1>
             </div>
 
             <div className="p-4 space-y-4 overflow-y-auto flex-1">
-                <Card className="p-4 border-slate-200 shadow-sm bg-white rounded-xl">
+                <Card className="p-4 border-[#E3E0F0] shadow-sm bg-white rounded-xl">
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
-                             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-black text-lg">
+                             <div className="w-12 h-12 rounded-full bg-[#F4F0FF] flex items-center justify-center text-[#49358E] font-black text-lg">
                                  {appointment.patientName.charAt(0)}
                              </div>
                              <div>
-                                 <h3 className="font-bold text-slate-800 text-base">{appointment.patientName}</h3>
-                                 <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                                     <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{appointment.hn}</span>
+                                 <h3 className="font-bold text-[#37286A] text-base">{appointment.patientName}</h3>
+                                 <div className="flex items-center gap-2 text-xs text-[#7066A9] font-medium">
+                                     <span className="bg-[#F4F0FF] px-1.5 py-0.5 rounded text-[#49358E]">{appointment.hn}</span>
                                      <span>• {appointment.province}</span>
                                  </div>
                              </div>
@@ -57,34 +59,34 @@ export function AppointmentDetailMobile({ appointment, onBack }: { appointment: 
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mt-4">
-                         <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                             <div className="flex items-center gap-2 text-slate-400 mb-1">
+                         <div className="bg-[#F4F0FF]/50 p-3 rounded-xl border border-[#E3E0F0]">
+                             <div className="flex items-center gap-2 text-[#7066A9] mb-1">
                                  <Calendar size={14} />
                                  <span className="text-[10px] font-bold uppercase">วันที่นัดหมาย</span>
                              </div>
-                             <div className="text-sm font-bold text-slate-800">
+                             <div className="text-sm font-bold text-[#37286A]">
                                  {format(new Date(appointment.date), "d MMM yyyy", { locale: th })}
                              </div>
                          </div>
-                         <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                             <div className="flex items-center gap-2 text-slate-400 mb-1">
+                         <div className="bg-[#F4F0FF]/50 p-3 rounded-xl border border-[#E3E0F0]">
+                             <div className="flex items-center gap-2 text-[#7066A9] mb-1">
                                  <Clock size={14} />
                                  <span className="text-[10px] font-bold uppercase">เวลา</span>
                              </div>
-                             <div className="text-sm font-bold text-slate-800">
+                             <div className="text-sm font-bold text-[#37286A]">
                                  {appointment.time} น.
                              </div>
                          </div>
                     </div>
 
-                    <div className="mt-3 bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-2">
+                    <div className="mt-3 bg-[#F4F0FF]/50 p-3 rounded-xl border border-[#E3E0F0] flex flex-col gap-2">
                         <div className="flex items-center gap-2">
-                            <Hospital size={14} className="text-teal-600" />
-                            <span className="text-xs font-bold text-slate-700">{appointment.hospital}</span>
+                            <Hospital size={14} className="text-[#49358E]" />
+                            <span className="text-xs font-bold text-[#37286A]">{appointment.hospital}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <MapPin size={14} className="text-teal-600" />
-                            <span className="text-xs font-medium text-slate-600">{appointment.clinic}</span>
+                            <MapPin size={14} className="text-[#49358E]" />
+                            <span className="text-xs font-medium text-[#7066A9]">{appointment.clinic}</span>
                         </div>
                     </div>
                 </Card>
@@ -114,10 +116,10 @@ export function AppointmentDetailMobile({ appointment, onBack }: { appointment: 
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
-                     <Button variant="outline" className="h-12 border-slate-200 text-slate-600 font-bold bg-white rounded-xl shadow-sm">
+                     <Button variant="outline" className="h-12 border-[#E3E0F0] text-[#7066A9] font-bold bg-white rounded-xl shadow-sm hover:bg-[#F4F0FF]/50">
                          <Printer size={16} className="mr-2" /> พิมพ์ใบนัด
                      </Button>
-                     <Button className="h-12 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md shadow-teal-100">
+                     <Button className="h-12 bg-[#49358E] hover:bg-[#37286A] text-white font-bold rounded-xl shadow-md shadow-[#49358E]/20">
                          <CheckCircle2 size={16} className="mr-2" /> ยืนยันนัดหมาย
                      </Button>
                 </div>

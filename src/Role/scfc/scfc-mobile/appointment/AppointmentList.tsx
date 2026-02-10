@@ -117,43 +117,44 @@ export function AppointmentList({
   const filteredData = data.filter(apt => {
     const statusFilter = activeFilters['status'];
     const matchesStatus = !statusFilter?.length || statusFilter.includes(apt.status);
+
     const typeFilter = activeFilters['type'];
     const matchesType = !typeFilter?.length || typeFilter.includes(apt.type);
+
     const clinicFilter = activeFilters['clinic'];
     const matchesClinic = !clinicFilter?.length || clinicFilter.includes(apt.clinic);
+
     const hospitalFilter = activeFilters['hospital'];
     const matchesHospital = !hospitalFilter?.length || hospitalFilter.some(h => apt.hospital.includes(h));
+
     const riskFilter = activeFilters['riskLevel'];
     const matchesRisk = !riskFilter?.length || riskFilter.includes(apt.riskLevel);
+
     return matchesStatus && matchesType && matchesClinic && matchesHospital && matchesRisk;
   });
 
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
-        {/* Header List View */}
-        <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-3">
-                <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors">
-                    <ArrowLeft size={20} />
-                </button>
-                <div>
-                    <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">รายการนัดหมาย</h1>
-                </div>
-            </div>
+    <div className="bg-[#F4F0FF]/40 min-h-screen flex flex-col font-sans pb-20">
+        {/* Header List View - Purple */}
+        <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
+            <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+                <ArrowLeft size={24} />
+            </button>
+            <h1 className="text-white text-lg font-bold">รายการนัดหมาย</h1>
         </div>
 
         <div className="p-4 space-y-4 flex-1 overflow-y-auto">
             
             {/* Search and Filter Row */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-[#E3E0F0] flex flex-col gap-3">
                  <div className="flex gap-2 w-full">
                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7066A9]" />
                         <Input 
                             placeholder="ค้นหาผู้ป่วย, HN..." 
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="pl-10 bg-white border-slate-200 rounded-xl h-12 text-sm shadow-sm focus:ring-teal-500" 
+                            className="pl-10 bg-[#F4F0FF]/30 border-[#E3E0F0] rounded-xl h-12 text-sm shadow-sm focus:ring-[#7066A9] focus:border-[#7066A9]" 
                         />
                     </div>
                      
@@ -173,9 +174,9 @@ export function AppointmentList({
                 <div className="flex flex-wrap gap-2">
                     {Object.entries(activeFilters).map(([key, values]) => 
                         values.map(v => (
-                            <span key={`${key}-${v}`} className="bg-teal-50 text-teal-700 px-2 py-1 rounded text-xs font-bold border border-teal-100 flex items-center gap-1">
+                            <span key={`${key}-${v}`} className="bg-[#F4F0FF] text-[#49358E] px-2 py-1 rounded text-xs font-bold border border-[#E3E0F0] flex items-center gap-1">
                                 {FILTER_LABEL_MAP[key]?.[v] || v} 
-                                <button onClick={() => handleRemoveFilterChip(key, v)}>×</button>
+                                <button onClick={() => handleRemoveFilterChip(key, v)} className="hover:text-[#37286A]">×</button>
                             </span>
                         ))
                     )}
@@ -184,8 +185,8 @@ export function AppointmentList({
 
             {/* Card List */}
             <div className="flex items-center justify-between px-1">
-                  <h3 className="font-bold text-slate-700 text-lg text-[14px]">รายการนัดหมาย</h3>
-                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{filteredData.length} รายการ</span>
+                  <h3 className="font-bold text-[#37286A] text-[14px]">รายการนัดหมาย</h3>
+                  <span className="text-[10px] font-bold text-[#7066A9] bg-[#F4F0FF] px-2 py-0.5 rounded-full border border-[#E3E0F0]">{filteredData.length} รายการ</span>
             </div>
             <div className="space-y-3">
                 {filteredData.map((apt) => (
@@ -193,19 +194,19 @@ export function AppointmentList({
                         key={apt.id}
                         onClick={() => onSelect(apt)}
                         className={cn(
-                            "bg-white border-slate-200 shadow-sm rounded-xl p-3 active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden group",
+                            "bg-white border-[#E3E0F0] shadow-sm rounded-xl p-3 active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden group hover:border-[#D2CEE7] hover:shadow-md hover:shadow-[#49358E]/5",
                             apt.isOverdue && "border-rose-100 ring-1 ring-rose-50"
                         )}
                     >
                         <div className="flex flex-col gap-1">
                             <div className="flex justify-between items-start">
                                 <div className="flex flex-col">
-                                    <h3 className="font-['IBM_Plex_Sans_Thai'] font-bold text-[#5e5873] text-[14px] leading-tight">
+                                    <h3 className="font-['IBM_Plex_Sans_Thai'] font-bold text-[#37286A] text-[14px] leading-tight">
                                         {apt.patientName}
                                     </h3>
                                     <div className="flex items-center gap-1.5 mt-0.5">
-                                        <Stethoscope className="w-3 h-3 text-indigo-500" />
-                                        <span className="font-['IBM_Plex_Sans_Thai'] text-[#6a7282] text-[12px]">
+                                        <Stethoscope className="w-3 h-3 text-[#7066A9]" />
+                                        <span className="font-['IBM_Plex_Sans_Thai'] text-[#7066A9] text-[12px]">
                                             {apt.clinic === 'ศัลยกรรมตกแต่ง' ? 'ผ่าตัดเย็บเพดานปาก' : 
                                              apt.clinic === 'อรรถบำบัด' ? 'ฝึกพูด' : 
                                              apt.clinic === 'ทันตกรรม' ? 'ทันตกรรมประดิษฐ์' :
@@ -222,16 +223,16 @@ export function AppointmentList({
                                  </div>
                             </div>
 
-                            <div className="flex items-center justify-between w-full mt-1.5 pt-1.5 border-t border-dashed border-gray-100">
+                            <div className="flex items-center justify-between w-full mt-1.5 pt-1.5 border-t border-dashed border-[#E3E0F0]">
                                  <div className="flex items-center gap-1.5">
-                                     <Hospital className="w-3 h-3 text-teal-500" />
-                                     <span className="font-['IBM_Plex_Sans_Thai'] text-[#6a7282] text-[12px] truncate max-w-[140px]">
+                                     <Hospital className="w-3 h-3 text-[#7066A9]" />
+                                     <span className="font-['IBM_Plex_Sans_Thai'] text-[#7066A9] text-[12px] truncate max-w-[140px]">
                                          {apt.hospital}
                                      </span>
                                  </div>
                                  <div className="flex items-center gap-1">
-                                     <Clock className="w-3 h-3 text-[#6a7282]" />
-                                     <span className="font-['IBM_Plex_Sans_Thai'] text-[#6a7282] text-[12px]">
+                                     <Clock className="w-3 h-3 text-[#D2CEE7]" />
+                                     <span className="font-['IBM_Plex_Sans_Thai'] text-[#7066A9] text-[12px]">
                                          {format(new Date(apt.date), "d MMM", { locale: th })} {apt.time}
                                      </span>
                                  </div>
@@ -240,7 +241,7 @@ export function AppointmentList({
                     </Card>
                 ))}
                 {filteredData.length === 0 && (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
+                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-[#E3E0F0] text-[#7066A9]">
                         <Stethoscope className="w-12 h-12 mx-auto mb-4 opacity-20" />
                         <p>ไม่พบรายการนัดหมาย</p>
                     </div>

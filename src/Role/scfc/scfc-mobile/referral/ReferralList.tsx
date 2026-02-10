@@ -131,6 +131,7 @@ export function ReferralList({
       case 'รอรับตัว': return 'bg-purple-50 text-purple-600';
       case 'รักษาแล้ว': return 'bg-emerald-50 text-emerald-600';
       case 'ส่งตัวกลับพื้นที่': return 'bg-teal-50 text-teal-600';
+      // Fallback for English statuses from card rendering
       case 'Pending': case 'pending': return 'bg-[#fff0e1] text-[#ff9f43]';
       case 'Accepted': return 'bg-[#E0FBFC] text-[#00CFE8]';
       case 'Rejected': return 'bg-red-50 text-red-500';
@@ -149,7 +150,7 @@ export function ReferralList({
       case 'Treated': case 'treated': return 'รักษาแล้ว';
       case 'WaitingReceive': return 'รอรับตัว';
       case 'NotTreated': return 'รอตรวจ';
-      default: return status;
+      default: return status; // Thai statuses from mock data display as-is
     }
   };
 
@@ -162,17 +163,13 @@ export function ReferralList({
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+    <div className="bg-[#F4F0FF]/40 min-h-screen flex flex-col font-sans pb-20">
         {/* Header List View */}
-        <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-3">
-                <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100">
-                    <ArrowLeft size={20} />
-                </button>
-                <div>
-                    <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">รายการส่งตัว</h1>
-                </div>
-            </div>
+        <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
+            <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+                <ArrowLeft size={24} />
+            </button>
+            <h1 className="text-white text-lg font-bold">รายการส่งตัว</h1>
         </div>
 
         <div className="p-4 space-y-4 flex-1 overflow-y-auto">

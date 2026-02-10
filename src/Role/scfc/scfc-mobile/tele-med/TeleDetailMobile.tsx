@@ -49,21 +49,13 @@ export function TeleDetailMobile({ session, onBack }: TeleDetailMobileProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 font-sans">
+    <div className="flex flex-col h-full bg-[#F4F0FF]/40 font-sans">
       {/* Header */}
-      <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors">
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">Tele-Consult</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{session.id}</p>
-          </div>
-        </div>
-        <Badge className={cn("text-[9px] font-bold px-2 py-1 rounded-full border-none", getStatusColor(session.status))}>
-            {session.status}
-        </Badge>
+      <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
+        <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+          <ArrowLeft size={24} />
+        </button>
+        <h1 className="text-white text-lg font-bold">Tele-Consult</h1>
       </div>
 
       <div className="p-4 space-y-4 overflow-y-auto flex-1 pb-24">

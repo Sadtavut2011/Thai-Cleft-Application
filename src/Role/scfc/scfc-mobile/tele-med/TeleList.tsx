@@ -142,17 +142,13 @@ export function TeleList({
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+    <div className="bg-[#F4F0FF]/40 min-h-screen flex flex-col font-sans pb-20">
         {/* Header List View */}
-        <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-3">
-                <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100">
-                    <ArrowLeft size={20} />
-                </button>
-                <div>
-                    <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">รายการ Tele-Consult</h1>
-                </div>
-            </div>
+        <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
+            <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+                <ArrowLeft size={24} />
+            </button>
+            <h1 className="text-white text-lg font-bold">รายการ Tele-Consult</h1>
         </div>
 
         <div className="p-4 space-y-4 flex-1 overflow-y-auto">

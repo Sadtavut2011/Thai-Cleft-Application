@@ -25,6 +25,10 @@ import { ResponsiveContainer, LineChart, Line, Tooltip } from 'recharts';
 import { ReferralList } from "./ReferralList";
 import { ReferralDetailMobile, ReferralCase } from "./ReferralDetailMobile";
 
+// ── Purple Theme Palette ──
+// Primary:   #49358E (dark), #7066A9 (medium), #37286A (darker)
+// Light:     #E3E0F0, #D2CEE7, #F4F0FF (lightest)
+
 // --- Mock Data ---
 
 const MOCK_REFERRALS: ReferralCase[] = [
@@ -172,57 +176,47 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
 
   // --- Dashboard View ---
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+    <div className="bg-[#F4F0FF]/40 min-h-screen flex flex-col font-sans pb-20">
       
-      {/* Header */}
-      <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
+      {/* Header - Purple */}
+      <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
           {onBack && (
-            <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100">
-              <ArrowLeft size={20} />
+            <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+              <ArrowLeft size={24} />
             </button>
           )}
-          <div>
-
-            <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">ส่งต่อผู้ป่วย</h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-            <div className="bg-teal-50 text-teal-600 p-1.5 rounded-lg">
-                <Ambulance size={18} />
-            </div>
-        </div>
+          <h1 className="text-white text-lg font-bold">ส่งต่อผู้ป่วย</h1>
       </div>
 
       <div className="p-4 space-y-5 flex-1 overflow-y-auto">
         
         {/* --- Filter Section --- */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-[#E3E0F0] flex flex-col gap-3">
              
              {/* Province and Hospital Filters */}
              <div className="flex gap-2">
                 {/* Province Filter */}
                 <Popover open={isProvinceOpen} onOpenChange={setIsProvinceOpen}>
                     <PopoverTrigger asChild>
-                        <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                        <button className="relative flex-1 h-[44px] bg-[#F4F0FF]/50 border border-[#E3E0F0] rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-[#7066A9]/30 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <MapPin size={18} />
                              </div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-[#37286A] truncate">
                                  {selectedProvince === 'All' ? 'ทุกจังหวัด' : selectedProvince}
                              </span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <ChevronDown size={18} />
                              </div>
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-[#E3E0F0] max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
                              <button
                                   onClick={() => { setSelectedProvince('All'); setIsProvinceOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedProvince === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedProvince === 'All' ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   ทุกจังหวัด
@@ -233,7 +227,7 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
                                   onClick={() => { setSelectedProvince(p); setIsProvinceOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedProvince === p ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedProvince === p ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   {p}
@@ -246,25 +240,25 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
                 {/* Hospital Filter */}
                 <Popover open={isHospitalOpen} onOpenChange={setIsHospitalOpen}>
                     <PopoverTrigger asChild>
-                        <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                        <button className="relative flex-1 h-[44px] bg-[#F4F0FF]/50 border border-[#E3E0F0] rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-[#7066A9]/30 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <Building2 size={18} />
                              </div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-[#37286A] truncate">
                                  {selectedHospital === 'All' ? 'ทุกโรงพยาบาล' : selectedHospital}
                              </span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <ChevronDown size={18} />
                              </div>
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-[#E3E0F0] max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
                              <button
                                   onClick={() => { setSelectedHospital('All'); setIsHospitalOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedHospital === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedHospital === 'All' ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   ทุกโรงพยาบาล
@@ -275,7 +269,7 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
                                   onClick={() => { setSelectedHospital(h); setIsHospitalOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedHospital === h ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedHospital === h ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   {h}
@@ -290,7 +284,7 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
             <div className="pt-1">
                 <Button 
                     onClick={() => setCurrentView('list')}
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-12 text-base font-bold shadow-md shadow-teal-100 flex items-center justify-center gap-2"
+                    className="w-full bg-[#49358E] hover:bg-[#37286A] text-white rounded-xl h-12 text-base font-bold shadow-md shadow-[#49358E]/20 flex items-center justify-center gap-2 transition-all"
                 >
                     ดูรายละเอียด
                     <ArrowRight size={18} />
@@ -300,35 +294,35 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
 
         {/* --- Stats Summary --- */}
         <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white p-3 rounded-xl border border-teal-100 shadow-sm">
+            <div className="bg-white p-3 rounded-xl border border-[#E3E0F0] shadow-sm">
                 <div className="flex justify-between items-start mb-2">
-                    <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-[#F4F0FF] text-[#49358E] flex items-center justify-center">
                         <Activity size={16} />
                     </div>
                     <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">+14%</span>
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.active}</span>
-                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">กำลังดำเนินการ</p>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.active}</span>
+                <p className="text-[9px] font-bold text-[#7066A9] mt-1 uppercase">กำลังดำเนินการ</p>
             </div>
 
-            <div className="bg-white p-3 rounded-xl border border-amber-100 shadow-sm">
+            <div className="bg-white p-3 rounded-xl border border-[#D2CEE7] shadow-sm">
                 <div className="flex justify-between items-start mb-2">
                     <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
                         <Clock size={16} />
                     </div>
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.avgResponse}</span>
-                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">รอตอบรับเฉลี่ย</p>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.avgResponse}</span>
+                <p className="text-[9px] font-bold text-[#7066A9] mt-1 uppercase">รอตอบรับเฉลี่ย</p>
             </div>
 
-            <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+            <div className="bg-white p-3 rounded-xl border border-[#E3E0F0] shadow-sm">
                  <div className="flex justify-between items-start mb-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-[#E3E0F0] text-[#37286A] flex items-center justify-center">
                         <RotateCcw size={16} />
                     </div>
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.referBack}</span>
-                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">ส่งกลับสำเร็จ</p>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.referBack}</span>
+                <p className="text-[9px] font-bold text-[#7066A9] mt-1 uppercase">ส่งกลับสำเร็จ</p>
             </div>
 
             <div className="bg-white p-3 rounded-xl border border-rose-100 shadow-sm">
@@ -338,16 +332,16 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
                     </div>
                     <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.emergency}</span>
-                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">ฉุกเฉิน</p>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.emergency}</span>
+                <p className="text-[9px] font-bold text-[#7066A9] mt-1 uppercase">ฉุกเฉิน</p>
             </div>
         </div>
 
         {/* --- Chart Section --- */}
-        <Card className="border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-slate-50 flex items-center justify-between">
-                <h3 className="font-bold text-slate-800 text-xs flex items-center gap-2 uppercase tracking-wider">
-                    <TrendingUp className="text-amber-500" size={14} /> แนวโน้มระยะเวลาตอบรับ
+        <Card className="border-[#E3E0F0] shadow-sm bg-white rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-[#F4F0FF] flex items-center justify-between">
+                <h3 className="font-bold text-[#37286A] text-xs flex items-center gap-2 uppercase tracking-wider">
+                    <TrendingUp className="text-[#7066A9]" size={14} /> แนวโน้มระยะเวลาตอบรับ
                 </h3>
             </div>
             <div className="p-4">
@@ -356,17 +350,17 @@ export default function ReferralSystem({ onBack, initialHN }: { onBack?: () => v
                          <ResponsiveContainer width="100%" height="100%">
                            <LineChart data={RESPONSE_TREND}>
                              <Tooltip 
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px' }} 
-                                labelStyle={{ color: '#64748b' }}
+                                contentStyle={{ borderRadius: '8px', border: '1px solid #E3E0F0', boxShadow: '0 4px 6px -1px rgba(73,53,142,0.1)', fontSize: '10px' }} 
+                                labelStyle={{ color: '#7066A9' }}
                              />
-                             <Line type="monotone" dataKey="avg" stroke="#f59e0b" strokeWidth={3} dot={{ r: 3, fill: '#f59e0b', strokeWidth: 2, stroke: '#fff' }} />
+                             <Line type="monotone" dataKey="avg" stroke="#49358E" strokeWidth={3} dot={{ r: 3, fill: '#49358E', strokeWidth: 2, stroke: '#fff' }} />
                            </LineChart>
                          </ResponsiveContainer>
                      ) : (
-                         <div className="w-full h-full bg-slate-50 animate-pulse rounded-lg" />
+                         <div className="w-full h-full bg-[#F4F0FF] animate-pulse rounded-lg" />
                      )}
                  </div>
-                 <div className="mt-2 flex items-center gap-2 text-[10px] text-amber-700 bg-amber-50 p-2 rounded-lg">
+                 <div className="mt-2 flex items-center gap-2 text-[10px] text-[#49358E] bg-[#F4F0FF] p-2 rounded-lg border border-[#E3E0F0]">
                      <AlertCircle size={12} />
                      <span className="font-bold">ช่วง 14:00-16:00 มักตอบรับล่าช้า</span>
                  </div>

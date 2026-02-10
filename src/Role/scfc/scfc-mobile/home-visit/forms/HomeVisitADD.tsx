@@ -42,12 +42,15 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
   const [visitType, setVisitType] = useState<'Joint' | 'Delegated'>('Joint');
   const [open, setOpen] = useState(false);
   
+  // Try to find in mock data first, otherwise use initialPatient if provided
   const selectedPatient = MOCK_PATIENTS.find(p => p.id === selectedPatientId) || 
                           (initialPatient && (initialPatient.id === selectedPatientId || initialPatient.hn === selectedPatientId) ? initialPatient : null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
+    
+    // Construct data object
     const data = {
       patientName: selectedPatient?.name || (selectedPatient?.firstName ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : ""),
       patientId: selectedPatient?.id || selectedPatient?.hn,
@@ -64,6 +67,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
       "flex items-start justify-center p-0 animate-in fade-in duration-300",
       isModal ? "min-h-fit bg-transparent md:bg-transparent md:p-0 items-stretch" : "fixed inset-0 z-[9999] overflow-y-auto min-h-screen bg-white md:bg-[#f8f9fa] md:items-center md:p-4"
     )}>
+      {/* CSS Hack to hide mobile bottom navigation */}
       <style>{`
         .fixed.bottom-0.z-50.rounded-t-\\[24px\\] {
             display: none !important;
@@ -75,6 +79,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
         isModal ? "shadow-none border-0 rounded-none h-full" : "md:max-w-[600px] shadow-none md:shadow-xl rounded-none md:rounded-2xl border-0 min-h-screen md:min-h-fit"
       )}>
         
+        {/* Header */}
         <div className="sticky top-0 z-50 flex flex-col shrink-0 shadow-sm">
           <TopHeader />
           <div className="bg-[#7066a9]">
@@ -85,6 +90,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
           <CardContent className="p-4 md:p-6 space-y-6 flex-1">
             
+            {/* 1. Search Patient */}
             <div className="space-y-3">
               <Label className="text-base font-semibold text-slate-800">1. ค้นหาผู้ป่วย</Label>
               <Popover open={open} onOpenChange={setOpen}>
@@ -131,6 +137,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
                 </PopoverContent>
               </Popover>
 
+              {/* Patient Info Box */}
               {selectedPatient && (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-1">
                   <span className="font-semibold text-[#5e5873]">{selectedPatient.name}</span>
@@ -139,9 +146,11 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
               )}
             </div>
 
+            {/* 2. Visit Type */}
             <div className="space-y-3">
               <Label className="text-base font-semibold text-slate-800">2. รูปแบบการเยี่ยม</Label>
               <div className="grid grid-cols-2 gap-4">
+                {/* Type: Joint */}
                 <div 
                   onClick={() => setVisitType('Joint')}
                   className={cn(
@@ -162,6 +171,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
                   </div>
                 </div>
 
+                {/* Type: Delegated */}
                 <div 
                   onClick={() => setVisitType('Delegated')}
                   className={cn(
@@ -184,6 +194,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
               </div>
             </div>
 
+            {/* 3. Responsibility Area */}
             <div className="space-y-3">
               <Label className="text-base font-semibold text-slate-800">3. พื้นที่รับผิดชอบ (รพ.สต.)</Label>
               <Select name="rph" defaultValue={selectedPatient?.rph || "รพ.สต. บ้านใหม่"}>
@@ -201,6 +212,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
               </p>
             </div>
 
+            {/* 4. Note */}
             <div className="space-y-3">
               <Label htmlFor="note" className="text-base font-semibold text-slate-800">หมายเหตุ / อาการที่ต้องติดตาม</Label>
               <Textarea 
@@ -213,6 +225,7 @@ export function HomeVisitADD({ onBack, onSubmit, initialPatientId, initialPatien
 
           </CardContent>
 
+          {/* Footer Buttons */}
           <div className="p-4 md:p-6 pt-4 flex items-center justify-between gap-4 bg-white">
             <Button 
               type="button" 

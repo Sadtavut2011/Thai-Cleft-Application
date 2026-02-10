@@ -35,6 +35,10 @@ import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import SlotClone from "../../../../imports/SlotClone-4162-1830";
 
+// ── Purple Theme Palette ──
+// Primary:   #49358E (dark), #7066A9 (medium), #37286A (darker)
+// Light:     #E3E0F0, #D2CEE7, #F4F0FF (lightest)
+
 // --- Types ---
 interface Visit {
   id: string;
@@ -145,7 +149,7 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
   };
 
   const VISIT_DATA = [
-    { name: 'เสร็จสิ้น', value: stats.completed, color: '#0d9488' },
+    { name: 'เสร็จสิ้น', value: stats.completed, color: '#49358E' },
     { name: 'รอเยี่ยม', value: stats.pending, color: '#f59e0b' },
     { name: 'เกินกำหนด', value: stats.overdue, color: '#ef4444' },
   ];
@@ -159,7 +163,6 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
     
     const matchSearch = v.patientName.includes(searchQuery) || v.hn.includes(searchQuery) || v.hospital.includes(searchQuery);
     
-    // Simple mock filter for province/hospital (assuming data matches or 'All')
     const matchProvince = selectedProvince === 'All' || v.province === selectedProvince;
     const matchHospital = selectedHospital === 'All' || v.hospital === selectedHospital;
 
@@ -172,56 +175,46 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
-      {/* --- Header --- */}
-      <div className="bg-white px-4 py-3 sticky top-0 z-20 border-b border-slate-100 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
+    <div className="bg-[#F4F0FF]/40 min-h-screen flex flex-col font-sans pb-20">
+      {/* --- Header - Purple --- */}
+      <div className="sticky top-0 w-full bg-[#7066a9] h-[64px] px-4 flex items-center gap-3 shrink-0 z-50 shadow-md">
           {onBack && (
-            <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-slate-100">
-              <ChevronLeft size={20} />
+            <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+              <ChevronLeft size={24} />
             </button>
           )}
-          <div>
-            <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">Home Visit</h1>
-
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-            <div className="bg-teal-50 text-teal-600 p-1.5 rounded-lg">
-                <ShieldCheck size={18} />
-            </div>
-        </div>
+          <h1 className="text-white text-lg font-bold">Home Visit</h1>
       </div>
 
       <div className="p-4 space-y-5 flex-1 overflow-y-auto">
         
         {/* --- Filter Section --- */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-[#E3E0F0] flex flex-col gap-3">
              
              {/* Province and Hospital Filters */}
              <div className="flex gap-2">
                 {/* Province Filter */}
                 <Popover open={isProvinceOpen} onOpenChange={setIsProvinceOpen}>
                     <PopoverTrigger asChild>
-                        <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                        <button className="relative flex-1 h-[44px] bg-[#F4F0FF]/50 border border-[#E3E0F0] rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-[#7066A9]/30 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <MapPin size={18} />
                              </div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-[#37286A] truncate">
                                  {selectedProvince === 'All' ? 'ทุกจังหวัด' : selectedProvince}
                              </span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <ChevronDown size={18} />
                              </div>
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <PopoverContent align="end" className="w-[200px] p-2 rounded-xl bg-white shadow-xl border border-[#E3E0F0] max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
                              <button
                                   onClick={() => { setSelectedProvince('All'); setIsProvinceOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedProvince === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedProvince === 'All' ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   ทุกจังหวัด
@@ -232,7 +225,7 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
                                   onClick={() => { setSelectedProvince(p); setIsProvinceOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedProvince === p ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedProvince === p ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   {p}
@@ -245,25 +238,25 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
                 {/* Hospital Filter */}
                 <Popover open={isHospitalOpen} onOpenChange={setIsHospitalOpen}>
                     <PopoverTrigger asChild>
-                        <button className="relative flex-1 h-[44px] bg-white border border-slate-200 rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all active:scale-95">
-                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                        <button className="relative flex-1 h-[44px] bg-[#F4F0FF]/50 border border-[#E3E0F0] rounded-xl flex items-center px-3 text-left focus:outline-none focus:ring-2 focus:ring-[#7066A9]/30 transition-all active:scale-95">
+                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <Building2 size={18} />
                              </div>
-                             <span className="pl-7 pr-6 text-[14px] font-medium text-slate-700 truncate">
+                             <span className="pl-7 pr-6 text-[14px] font-medium text-[#37286A] truncate">
                                  {selectedHospital === 'All' ? 'ทุกโรงพยาบาล' : selectedHospital}
                              </span>
-                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[#7066A9] pointer-events-none">
                                  <ChevronDown size={18} />
                              </div>
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-slate-100 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <PopoverContent align="end" className="w-[240px] p-2 rounded-xl bg-white shadow-xl border border-[#E3E0F0] max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                          <div className="flex flex-col">
                              <button
                                   onClick={() => { setSelectedHospital('All'); setIsHospitalOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedHospital === 'All' ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedHospital === 'All' ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   ทุกโรงพยาบาล
@@ -274,7 +267,7 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
                                   onClick={() => { setSelectedHospital(h); setIsHospitalOpen(false); }}
                                   className={cn(
                                       "w-full text-left px-3 py-3 text-[14px] font-medium transition-colors rounded-lg",
-                                      selectedHospital === h ? "bg-teal-50 text-teal-600" : "text-slate-700 hover:bg-slate-50"
+                                      selectedHospital === h ? "bg-[#F4F0FF] text-[#49358E]" : "text-slate-700 hover:bg-[#F4F0FF]/50"
                                   )}
                               >
                                   {h}
@@ -285,11 +278,11 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
                 </Popover>
              </div>
 
-            {/* --- Action Button (Moved inside) --- */}
+            {/* --- Action Button --- */}
             <div className="pt-1">
                 <Button 
                     onClick={() => onViewDetail && onViewDetail('all')}
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-12 text-base font-bold shadow-md shadow-teal-100 flex items-center justify-center gap-2"
+                    className="w-full bg-[#49358E] hover:bg-[#37286A] text-white rounded-xl h-12 text-base font-bold shadow-md shadow-[#49358E]/20 flex items-center justify-center gap-2 transition-all"
                 >
                     ดูรายละเอียด
                     <ArrowRight size={18} />
@@ -299,34 +292,34 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
 
         {/* --- Stats Summary --- */}
         <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white p-3 rounded-xl border border-teal-100 shadow-sm flex flex-col items-center justify-center text-center">
-                <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-1">
+            <div className="bg-white p-3 rounded-xl border border-[#E3E0F0] shadow-sm flex flex-col items-center justify-center text-center">
+                <div className="w-8 h-8 rounded-full bg-[#F4F0FF] text-[#49358E] flex items-center justify-center mb-1">
                     <CheckCircle2 size={16} />
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.completed}</span>
-                <span className="text-[9px] font-bold text-slate-400 mt-1">เยี่ยมแล้ว</span>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.completed}</span>
+                <span className="text-[9px] font-bold text-[#7066A9] mt-1">เยี่ยมแล้ว</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-amber-100 shadow-sm flex flex-col items-center justify-center text-center">
                 <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-1">
                     <Clock size={16} />
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.pending}</span>
-                <span className="text-[9px] font-bold text-slate-400 mt-1">รอเยี่ยม</span>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.pending}</span>
+                <span className="text-[9px] font-bold text-[#7066A9] mt-1">รอเยี่ยม</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-rose-100 shadow-sm flex flex-col items-center justify-center text-center">
                 <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-1">
                     <AlertCircle size={16} />
                 </div>
-                <span className="text-xl font-black text-slate-800 leading-none">{stats.overdue}</span>
-                <span className="text-[9px] font-bold text-slate-400 mt-1">เกินกำหนด</span>
+                <span className="text-xl font-black text-[#37286A] leading-none">{stats.overdue}</span>
+                <span className="text-[9px] font-bold text-[#7066A9] mt-1">เกินกำหนด</span>
             </div>
         </div>
 
         {/* --- Chart Section --- */}
-        <Card className="border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-slate-50 flex items-center justify-between">
-                <h3 className="font-bold text-slate-800 text-xs flex items-center gap-2 uppercase tracking-wider">
-                    <BarChart3 className="text-teal-600" size={14} /> ภาพรวมประจำเดือน
+        <Card className="border-[#E3E0F0] shadow-sm bg-white rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-[#F4F0FF] flex items-center justify-between">
+                <h3 className="font-bold text-[#37286A] text-xs flex items-center gap-2 uppercase tracking-wider">
+                    <BarChart3 className="text-[#7066A9]" size={14} /> ภาพรวมประจำเดือน
                 </h3>
             </div>
             <div className="p-4 flex items-center justify-between">
@@ -351,7 +344,7 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
                          </PieChart>
                      )}
                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-xs font-black text-slate-800">{stats.completed + stats.pending + stats.overdue}</span>
+                        <span className="text-xs font-black text-[#37286A]">{stats.completed + stats.pending + stats.overdue}</span>
                      </div>
                  </div>
                  <div className="flex-1 pl-4 space-y-2">
@@ -359,9 +352,9 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
                        <div key={item.name} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                             <span className="text-[10px] font-bold text-slate-500">{item.name}</span>
+                             <span className="text-[10px] font-bold text-[#7066A9]">{item.name}</span>
                           </div>
-                          <span className="text-xs font-black text-slate-800">{Math.round((item.value / (stats.completed + stats.pending + stats.overdue)) * 100)}%</span>
+                          <span className="text-xs font-black text-[#37286A]">{Math.round((item.value / (stats.completed + stats.pending + stats.overdue)) * 100)}%</span>
                        </div>
                      ))}
                  </div>
@@ -370,17 +363,17 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
 
         {/* --- Map View (if active) --- */}
         {viewMode === 'map' && (
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm h-[400px] relative">
+            <div className="bg-white rounded-2xl border border-[#E3E0F0] overflow-hidden shadow-sm h-[400px] relative">
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
-                    <button className="w-9 h-9 bg-white rounded-xl shadow-md flex items-center justify-center text-slate-600 border border-slate-100">
+                    <button className="w-9 h-9 bg-white rounded-xl shadow-md flex items-center justify-center text-[#7066A9] border border-[#E3E0F0]">
                         <Navigation size={18} />
                     </button>
-                    <button className="w-9 h-9 bg-white rounded-xl shadow-md flex items-center justify-center text-slate-600 border border-slate-100">
+                    <button className="w-9 h-9 bg-white rounded-xl shadow-md flex items-center justify-center text-[#7066A9] border border-[#E3E0F0]">
                         <MapPin size={18} />
                     </button>
                 </div>
                 
-                <div className="w-full h-full bg-slate-100 relative">
+                <div className="w-full h-full bg-[#F4F0FF] relative">
                      <iframe 
                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3753.689626577903!2d99.03057531494883!3d19.809279030623315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30da3a7e91a66a1b%3A0x4d567c9e0d167735!2sFang%20Hospital!5e0!3m2!1sen!2sth!4v1625567891234!5m2!1sen!2sth"
                        width="100%"
@@ -397,11 +390,11 @@ export function HomeVisitDashboard({ onBack, onViewDetail, initialSearch }: { on
                         >
                             <div className={cn(
                                 "w-3 h-3 rounded-full border border-white shadow-lg",
-                                v.status === 'Confirmed' ? "bg-teal-500" :
+                                v.status === 'Confirmed' ? "bg-[#49358E]" :
                                 v.status === 'Pending' ? "bg-amber-500" : "bg-rose-500"
                             )}></div>
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap z-20">
-                                <div className="bg-slate-800 text-white text-[9px] py-1 px-2 rounded-md shadow-lg font-bold">
+                                <div className="bg-[#37286A] text-white text-[9px] py-1 px-2 rounded-md shadow-lg font-bold">
                                     {v.patientName}
                                 </div>
                             </div>
