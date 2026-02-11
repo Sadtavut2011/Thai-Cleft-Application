@@ -3,18 +3,18 @@ import SCFCSidebar from '../layout/SCFCSidebar';
 import { WebHeader } from '../components/WebHeader';
 import { AppointmentSystem } from '../operations/appointment/AppointmentSystem';
 import ReferralSystem from '../operations/referral/ReferralSystem';
-import PatientManagement from '../../../cm/cm-web/patient/treatment-plan';
-import { NewPatient } from '../../../cm/cm-web/pages/NewPatient';
-import { CaseManagerNotifyForm } from '../../../cm/cm-web/pages/CaseManagerNotifyForm';
-import { PatientDetailView as PatientDetail } from '../../../cm/cm-web/patient/PatientDetailView';
+import PatientManagement from '../../../../Role/cm/cm-web/patient/treatment-plan';
+import { NewPatient } from '../../../../Role/cm/cm-web/pages/NewPatient';
+import { CaseManagerNotifyForm } from '../../../../Role/cm/cm-web/pages/CaseManagerNotifyForm';
+import { PatientDetailView as PatientDetail } from '../../../../Role/cm/cm-web/patient/PatientDetailView';
 import TeleConsultationSystem from '../operations/tele-consult/TeleConsultationSystem';
 import { HomeVisitSystem } from '../operations/home-visit/HomeVisitSystem';
 import { TreatmentPlanSystem } from '../page/TreatmentPlanSystem';
 import { OperationsDashboard } from '../page/OperationsDashboard';
 import FundSystem from '../operations/fund-request/FundSystem';
-import GISSystem from '../../../cm/cm-web/patient/gis-map/gis-patient';
-import ChatSystem from '../../../cm/cm-web/chat/ChatSystem';
-import { ProfilePage } from '../../../cm/cm-web/pages/ProfilePage';
+import GISSystem from '../../../../Role/cm/cm-web/patient/gis-map/gis-patient';
+import ChatSystem from '../../../../Role/cm/cm-web/chat/ChatSystem';
+import { ProfilePage } from '../../../../Role/cm/cm-web/pages/ProfilePage';
 import { Toaster } from "../../../../components/ui/sonner";
 import { useCMData } from '../../../../hooks/useCMData';
 
@@ -107,7 +107,7 @@ export default function WebDashboard() {
         return <GISSystem />;
       case "ระบบสนทนา":
         return <ChatSystem />;
-      case "ระบบปฏิบัติการ":
+      case "แดชบอร์ด":
         return <OperationsDashboard />;
       case "ข้อมูลส่วนตัว":
         return <ProfilePage onBack={() => setActivePage("จัดการข้อมูลผู้ป่วย")} />;

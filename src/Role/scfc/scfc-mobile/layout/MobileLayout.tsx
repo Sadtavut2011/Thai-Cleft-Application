@@ -50,7 +50,7 @@ export default function MobileLayout() {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
     const [isEditPatientModalOpen, setIsEditPatientModalOpen] = useState(false);
-    const [editingPatient, setEditingPatient] = useState(null);
+    const [editingPatient, setEditingPatient] = useState<any>(null);
 
     const [targetReferralHN, setTargetReferralHN] = useState<string | undefined>(undefined);
     const [targetHomeVisitSearch, setTargetHomeVisitSearch] = useState('');

@@ -40,9 +40,15 @@ const SidebarItem = ({
   const handleClick = () => {
     if (hasSubItems) {
       onToggle(item.label);
+      // Navigate to first sub-item for parent menus
+      if (item.label === "ข้อมูลผู้ป่วย" || item.label === "ระบบปฏิบัติการ") {
+        onNavigate(item.subItems![0].label);
+      } else {
+        onNavigate(item.label);
+      }
+    } else {
+      onNavigate(item.label);
     }
-    // Always navigate to the item's page, even if it has subitems
-    onNavigate(item.label);
   };
 
   return (
@@ -100,9 +106,10 @@ export default function SCFCSidebar({ className, currentView, onNavigate }: Side
 
   const menuItems: MenuItem[] = [
     { 
-      label: "จัดการข้อมูลผู้ป่วย", 
+      label: "ข้อมูลผู้ป่วย", 
       icon: User,
       subItems: [
+        { label: "จัดการข้อมูลผู้ป่วย", icon: Users },
         { label: "แผนการรักษา", icon: FileText },
         { label: "แผนที่(GIS)", icon: Map }
       ]
@@ -111,6 +118,7 @@ export default function SCFCSidebar({ className, currentView, onNavigate }: Side
       label: "ระบบปฏิบัติการ",
       icon: LayoutDashboard,
       subItems: [
+        { label: "แดชบอร์ด", icon: Activity },
         { label: "ระบบเยี่ยมบ้าน", icon: Home },
         { label: "ระบบนัดหมาย", icon: Calendar },
         { label: "Tele-consult", icon: Video },

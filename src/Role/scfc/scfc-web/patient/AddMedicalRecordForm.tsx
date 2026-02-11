@@ -21,7 +21,6 @@ import { th } from 'date-fns/locale';
 import { cn } from '../../../../../components/ui/utils';
 import { Textarea } from '../../../../../components/ui/textarea';
 
-// Reuse types if needed, or redefine
 export type MedicalRecordMode = 'general' | 'appointment' | 'referral' | 'telemed';
 
 interface AddMedicalRecordFormProps {
@@ -84,7 +83,6 @@ export const AddMedicalRecordForm: React.FC<AddMedicalRecordFormProps> = ({
     mode = 'general',
     initialData
 }) => {
-    // Web version: Single page layout, no steps needed for desktop usually
     const [formData, setFormData] = useState({
         date: initialData?.date || new Date(),
         hospital: initialData?.hospital || 'โรงพยาบาลมหาราชนครเชียงใหม่',
@@ -114,7 +112,6 @@ export const AddMedicalRecordForm: React.FC<AddMedicalRecordFormProps> = ({
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full font-['IBM_Plex_Sans_Thai']">
-            {/* Desktop Header */}
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" onClick={onBack} className="rounded-full h-10 w-10 border-slate-200">
@@ -136,9 +133,7 @@ export const AddMedicalRecordForm: React.FC<AddMedicalRecordFormProps> = ({
             <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
                 <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
                     
-                    {/* Left Column: General Info & History */}
                     <div className="space-y-6">
-                         {/* General Info Card */}
                          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                             <div className="flex items-center gap-2 pb-4 border-b border-slate-100 mb-2">
                                 <div className="bg-blue-50 p-2 rounded-lg text-blue-600">
@@ -203,7 +198,6 @@ export const AddMedicalRecordForm: React.FC<AddMedicalRecordFormProps> = ({
                             </div>
                          </div>
 
-                         {/* Symptoms Card */}
                          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                             <div className="flex items-center gap-2 pb-4 border-b border-slate-100 mb-2">
                                 <div className="bg-orange-50 p-2 rounded-lg text-orange-600">
@@ -239,9 +233,7 @@ export const AddMedicalRecordForm: React.FC<AddMedicalRecordFormProps> = ({
                          </div>
                     </div>
 
-                    {/* Right Column: Treatment & Diagnosis */}
                     <div className="space-y-6">
-                        {/* Treatment Type */}
                         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                             <div className="flex items-center gap-2 pb-4 border-b border-slate-100 mb-2">
                                 <div className="bg-purple-50 p-2 rounded-lg text-purple-600">
@@ -258,7 +250,6 @@ export const AddMedicalRecordForm: React.FC<AddMedicalRecordFormProps> = ({
                             />
                         </div>
 
-                        {/* Diagnosis & Plan */}
                         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 h-fit">
                             <div className="flex items-center gap-2 pb-4 border-b border-slate-100 mb-2">
                                 <div className="bg-green-50 p-2 rounded-lg text-green-600">

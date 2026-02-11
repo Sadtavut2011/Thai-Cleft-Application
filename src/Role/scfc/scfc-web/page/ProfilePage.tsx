@@ -61,7 +61,6 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
       </div>
 
       <div className="flex flex-col gap-6">
-        {/* Top Menu */}
         <div className="w-full overflow-x-auto pb-2">
           <nav className="flex items-center gap-2 min-w-max">
             <MenuButton 
@@ -91,7 +90,6 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
           </nav>
         </div>
 
-        {/* Content Area */}
         <div className="flex-1">
           {renderContent()}
         </div>
@@ -120,9 +118,7 @@ const GeneralTab = () => {
       <Card>
         <CardHeader>
           <CardTitle>รูปโปรไฟล์ (Profile Picture)</CardTitle>
-          <CardDescription>
-            รูปภาพจะแสดงในส่วนหัวและรายการบุคลากร
-          </CardDescription>
+          <CardDescription>รูปภาพจะแสดงในส่วนหัวและรายการบุคลากร</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row items-center gap-6">
           <div className="relative">
@@ -139,9 +135,7 @@ const GeneralTab = () => {
               <Button variant="outline" size="sm">อัปโหลดรูปใหม่</Button>
               <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">ลบรูปภาพ</Button>
             </div>
-            <p className="text-xs text-slate-400">
-              แนะนำขนาด 400x400px JPG หรือ PNG ไม่เกิน 2MB
-            </p>
+            <p className="text-xs text-slate-400">แนะนำขนาด 400x400px JPG หรือ PNG ไม่เกิน 2MB</p>
           </div>
         </CardContent>
       </Card>
@@ -373,10 +367,7 @@ const NotificationsTab = () => {
                 <div className="flex items-start space-x-3">
                     <Checkbox id="notify-1" defaultChecked />
                     <div className="grid gap-1.5 leading-none">
-                        <label
-                            htmlFor="notify-1"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
+                        <label htmlFor="notify-1" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                             เมื่อมีคนส่งเคสใหม่เข้ามา (New Referral Case)
                         </label>
                         <p className="text-sm text-slate-500">แจ้งเตือนทันทีเมื่อมีเคสส่งตัวมาถึงหน่วยงานของคุณ</p>
@@ -388,10 +379,7 @@ const NotificationsTab = () => {
                 <div className="flex items-start space-x-3">
                     <Checkbox id="notify-2" defaultChecked />
                     <div className="grid gap-1.5 leading-none">
-                        <label
-                            htmlFor="notify-2"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
+                        <label htmlFor="notify-2" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                             เมื่อสถานะเคสมีการเปลี่ยนแปลง (Status Update)
                         </label>
                         <p className="text-sm text-slate-500">เช่น เมื่อปลายทางกดรับเคส หรือมีการตอบกลับ</p>
@@ -403,10 +391,7 @@ const NotificationsTab = () => {
                 <div className="flex items-start space-x-3">
                     <Checkbox id="notify-3" />
                     <div className="grid gap-1.5 leading-none">
-                        <label
-                            htmlFor="notify-3"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
+                        <label htmlFor="notify-3" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                             ข่าวสารประชาสัมพันธ์จากส่วนกลาง (News & Announcements)
                         </label>
                         <p className="text-sm text-slate-500">ประกาศสำคัญ กิจกรรม หรือการอัปเดตระบบ</p>
@@ -436,9 +421,7 @@ const ESignatureTab = () => {
                     <PenTool size={32} />
                 </div>
                 <h3 className="font-semibold text-lg text-slate-700 mb-1">คลิกเพื่ออัปโหลด หรือลากไฟล์มาวาง</h3>
-                <p className="text-slate-500 text-sm max-w-sm mx-auto mb-4">
-                    รองรับไฟล์ PNG (พื้นหลังใส) หรือ JPG ขนาดไม่เกิน 5MB 
-                </p>
+                <p className="text-slate-500 text-sm max-w-sm mx-auto mb-4">รองรับไฟล์ PNG (พื้นหลังใส) หรือ JPG ขนาดไม่เกิน 5MB</p>
                 <Button variant="outline">เลือกไฟล์</Button>
             </div>
 
@@ -452,7 +435,6 @@ const ESignatureTab = () => {
                             พยาบาลวิชาชีพปฏิบัติการ
                         </div>
                         <div className="opacity-30">
-                            {/* Placeholder for signature preview */}
                             <div className="w-32 h-12 bg-slate-200 rounded flex items-center justify-center text-xs">
                                 Signature Preview
                             </div>

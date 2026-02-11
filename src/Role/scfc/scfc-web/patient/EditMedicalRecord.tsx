@@ -26,7 +26,7 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
      targetAgeRange: initialData?.targetAgeRange || "",
      calculatedDate: initialData?.calculatedDate || "",
      treatmentName: initialData?.treatmentName || initialData?.treatment || "",
-     birthDate: initialData?.birthDate || "2024-01-01", // Default mock birthdate if missing
+     birthDate: initialData?.birthDate || "2024-01-01",
      ...initialData
   });
 
@@ -35,7 +35,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
     months: "" 
   });
 
-  // Initialize duration from existing targetAgeRange string
   useEffect(() => {
     if (initialData?.targetAgeRange) {
       const yearsMatch = initialData.targetAgeRange.match(/(\d+)\s*ปี/);
@@ -45,9 +44,8 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
         months: monthsMatch ? monthsMatch[1] : ""
       });
     }
-  }, []); // Run once on mount
+  }, []);
 
-  // Calculate date when duration changes
   useEffect(() => {
     const years = parseInt(ageDuration.years) || 0;
     const months = parseInt(ageDuration.months) || 0;
@@ -63,7 +61,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
     targetDate.setFullYear(targetDate.getFullYear() + years);
     targetDate.setMonth(targetDate.getMonth() + months);
 
-    // Format Date: "1 เมษายน 2546"
     const day = targetDate.getDate();
     const month = targetDate.toLocaleDateString('th-TH', { month: 'long' });
     const year = targetDate.getFullYear() + 543;
@@ -71,7 +68,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
 
     const newTargetAgeRange = `${years} ปี ${months} เดือน`;
 
-    // Only update if changed to prevent loops
     if (formData.calculatedDate !== formattedDate || formData.targetAgeRange !== newTargetAgeRange) {
         setFormData(prev => ({
             ...prev,
@@ -98,7 +94,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
 
   return (
     <div className="bg-[#FAFAFA] h-full flex flex-col font-['Montserrat','Noto_Sans_Thai',sans-serif]">
-       {/* Header */}
        <div className="relative bg-white pt-6 pb-4 px-6 shadow-sm z-10 flex-shrink-0 flex items-center gap-4 border-b border-gray-100">
           <Button 
             variant="ghost" 
@@ -113,11 +108,9 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
           </div>
        </div>
 
-       {/* Form Content */}
        <div className="flex-1 overflow-y-auto p-6">
          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 max-w-lg mx-auto space-y-6">
             
-            {/* Status */}
             <div className="flex items-center justify-between">
                 <label className="text-[#120d26] font-bold text-[16px]">สถานะปัจจุบัน</label>
                 <Badge className="bg-blue-100 text-blue-600 hover:bg-blue-200 border-none px-4 py-1 text-sm font-medium rounded-full">
@@ -127,7 +120,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
             
             <div className="border-b border-gray-100 my-2"></div>
 
-            {/* Treatment Name */}
             <div className="space-y-2">
                <label className="text-[#120d26] font-bold text-[16px]">ชื่อการรักษา (Treatment Name)</label>
                <div onClick={() => setShowTreatmentSelector(true)}>
@@ -140,7 +132,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
                </div>
             </div>
 
-            {/* Target Age Range - Changed to Years/Months Input */}
             <div className="space-y-2">
                <label className="text-[#120d26] font-bold text-[16px]">ระยะเวลาที่กำหนด (Duration)</label>
                <div className="flex gap-4">
@@ -171,7 +162,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
                <p className="text-xs text-gray-400 mt-1">* ระบุระยะเวลาเพื่อคำนวณวันที่คาดการณ์จากวันเกิด</p>
             </div>
 
-            {/* Calculated Date */}
             <div className="space-y-2">
                <div className="flex items-center gap-2">
                    <label className="text-[#120d26] font-bold text-[16px]">วันที่คาดการณ์ (Calculated Date)</label>
@@ -191,7 +181,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
             </div>
             
             <div className="pt-4 space-y-4">
-                {/* Save Button */}
                 <Button 
                    onClick={() => onSave(formData)}
                    className="w-full h-[50px] rounded-xl bg-[#7367f0] text-white font-medium hover:bg-[#685dd8] shadow-md shadow-indigo-200 text-[16px] flex items-center justify-center gap-2"
@@ -200,7 +189,6 @@ export function EditMedicalRecord({ initialData, onSave, onBack, onDelete }: Edi
                    บันทึกการเปลี่ยนแปลง
                 </Button>
 
-                {/* Delete Button */}
                 {onDelete && (
                     <div className="flex justify-center">
                         <button 
