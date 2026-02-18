@@ -28,9 +28,11 @@ import {
   MapPin
 } from "lucide-react";
 import { cn } from "../../../../components/ui/utils";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { th } from "date-fns/locale";
+import { toast } from 'sonner@2.0.3';
+import FigmaConfirmDialog from '../../../../components/shared/FigmaConfirmDialog';
+
+const THAI_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const formatShortThaiDate = (d: Date) => `${d.getDate()} ${THAI_MONTHS_SHORT[d.getMonth()]}`;
 
 import { TeleForm } from './TeleForm';
 
@@ -152,6 +154,7 @@ export function TeleConsultationSystem({ onBack }: TeleConsultationSystemProps) 
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
 
   // Handlers
   const handleCreateClick = () => {
@@ -174,10 +177,7 @@ export function TeleConsultationSystem({ onBack }: TeleConsultationSystemProps) 
   };
 
   const handleCancelClick = (id: string) => {
-    if (confirm("คุณต้องการยกเลิกนัดหมายนี้ใช่หรือไม่?")) {
-      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'Cancelled' } : a));
-      toast.success("ยกเลิกนัดหมายเรียบร้อยแล้ว");
-    }
+    setCancelTargetId(id);
   };
 
   const validateForm = () => {
@@ -186,7 +186,7 @@ export function TeleConsultationSystem({ onBack }: TeleConsultationSystemProps) 
     if (!formData.date) newErrors.date = "กรุณาระบุวันที่";
     if (!formData.time) newErrors.time = "กรุณาระบุเวลา";
     if (!formData.treatmentDetails) newErrors.treatmentDetails = "กรุณาระบุรายละเอียดการรักษา";
-    if (!formData.meetingLink) newErrors.meetingLink = "กรุณาระบุลิงก์การประชุม";
+    if (!formData.meetingLink) newErrors.meetingLink = "กรุณาระบุลิงค์การประชุม";
     
     if (formData.channel === 'Intermediary' && !formData.intermediaryName) {
       newErrors.intermediaryName = "กรุณาระบุชื่อหน่วยงานตัวกลาง";
@@ -238,7 +238,7 @@ export function TeleConsultationSystem({ onBack }: TeleConsultationSystemProps) 
             <h1 className="text-white text-lg font-bold">ระบบ Tele-consult</h1>
       </div>
 
-      <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto pb-20">
+      <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto pb-20 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       
       {/* Main Content Card */}
       <Card className="border-none shadow-[0px_4px_24px_0px_rgba(0,0,0,0.06)] overflow-hidden bg-white">
@@ -310,10 +310,10 @@ export function TeleConsultationSystem({ onBack }: TeleConsultationSystemProps) 
                                             <td className="px-2 py-2 align-top text-center">
                                                 <div className="font-bold text-[#7367f0] text-sm leading-none mb-0.5">{apt.time}</div>
                                                 <div className="text-[9px] text-[#b9b9c3] leading-tight">
-                                                    {format(new Date(apt.date), "d MMM", { locale: th })}
+                                                    {formatShortThaiDate(new Date(apt.date))}
                                                 </div>
                                                 <div className="text-[9px] text-[#b9b9c3] leading-tight">
-                                                    {format(new Date(apt.date), "yy", { locale: th })}
+                                                    {String((new Date(apt.date).getFullYear() + 543) % 100)}
                                                 </div>
                                             </td>
                                             <td className="px-2 py-2 align-top">
@@ -361,7 +361,7 @@ export function TeleConsultationSystem({ onBack }: TeleConsultationSystemProps) 
                                  {history.map((apt) => (
                                     <tr key={apt.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-2 py-2 align-top text-center">
-                                            <div className="font-medium text-[#5e5873] text-xs leading-none mb-0.5">{format(new Date(apt.date), "d MMM", { locale: th })}</div>
+                                            <div className="font-medium text-[#5e5873] text-xs leading-none mb-0.5">{formatShortThaiDate(new Date(apt.date))}</div>
                                             <div className="text-[10px] text-[#b9b9c3]">{apt.time}</div>
                                         </td>
                                         <td className="px-2 py-2 align-top">
@@ -563,6 +563,22 @@ export function TeleConsultationSystem({ onBack }: TeleConsultationSystemProps) 
             )}
         </DialogContent>
       </Dialog>
+      
+      {/* Cancel Appointment Confirmation Dialog */}
+      <FigmaConfirmDialog
+        isOpen={!!cancelTargetId}
+        onClose={() => setCancelTargetId(null)}
+        title="ยืนยันการยกเลิกนัดหมาย"
+        description="คุณต้องการยกเลิกนัดหมายนี้ใช่หรือไม่?"
+        cancelLabel="ยกเลิกนัดหมาย"
+        confirmLabel="ไม่ยกเลิก"
+        onCancel={() => {
+          setAppointments(prev => prev.map(a => a.id === cancelTargetId ? { ...a, status: 'Cancelled' } : a));
+          toast.success("ยกเลิกนัดหมายเรียบร้อยแล้ว");
+          setCancelTargetId(null);
+        }}
+        onConfirm={() => setCancelTargetId(null)}
+      />
       </div>
     </div>
   );
