@@ -68,6 +68,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/components/ui/utils";
+import FigmaConfirmDialog from "../../../components/shared/FigmaConfirmDialog";
 
 export interface User {
   id: number;
@@ -97,6 +98,8 @@ export function UserManagementSystem() {
   const [filterOrg, setFilterOrg] = useState<string>("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedUserForLog, setSelectedUserForLog] = useState<User | null>(null);
+  const [deleteTargetUserId, setDeleteTargetUserId] = useState<number | null>(null);
+  const [statusChangeTarget, setStatusChangeTarget] = useState<{ id: number; newStatus: User["status"] } | null>(null);
   
   // Form state for new user
   const [newUser, setNewUser] = useState<Partial<User>>({
@@ -141,13 +144,12 @@ export function UserManagementSystem() {
   };
 
   const handleDeleteUser = (id: number) => {
-    if (confirm("คุณต้องการลบผู้ใช้งานนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้")) {
-      setUsers(users.filter(u => u.id !== id));
-    }
+    setDeleteTargetUserId(id);
   };
 
   const handleStatusChange = (id: number, newStatus: User["status"]) => {
-    if (newStatus === "Inactive" && !confirm("คุณต้องการระงับการใช้งาน/ปิดการใช้งานบัญชีนี้ใช่หรือไม่?")) {
+    if (newStatus === "Inactive") {
+      setStatusChangeTarget({ id, newStatus });
       return;
     }
     setUsers(users.map(u => u.id === id ? { ...u, status: newStatus } : u));
@@ -510,6 +512,40 @@ export function UserManagementSystem() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <FigmaConfirmDialog
+        isOpen={deleteTargetUserId !== null}
+        onClose={() => setDeleteTargetUserId(null)}
+        title="ยืนยันการลบผู้ใช้งาน"
+        description="คุณต้องการลบผู้ใช้งานนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้"
+        cancelLabel="ลบข้อมูล"
+        confirmLabel="ยกเลิก"
+        onCancel={() => {
+          if (deleteTargetUserId !== null) {
+            setUsers(users.filter(u => u.id !== deleteTargetUserId));
+            setDeleteTargetUserId(null);
+          }
+        }}
+        onConfirm={() => setDeleteTargetUserId(null)}
+      />
+
+      {/* Status Change Confirmation Dialog */}
+      <FigmaConfirmDialog
+        isOpen={statusChangeTarget !== null}
+        onClose={() => setStatusChangeTarget(null)}
+        title="ยืนยันการเปลี่ยนสถานะ"
+        description="คุณต้องการระงับการใช้งาน/ปิดการใช้งานบัญชีนี้ใช่หรือไม่?"
+        cancelLabel="ระงับ"
+        confirmLabel="ยกเลิก"
+        onCancel={() => {
+          if (statusChangeTarget !== null) {
+            setUsers(users.map(u => u.id === statusChangeTarget.id ? { ...u, status: statusChangeTarget.newStatus } : u));
+            setStatusChangeTarget(null);
+          }
+        }}
+        onConfirm={() => setStatusChangeTarget(null)}
+      />
     </div>
   );
 }
