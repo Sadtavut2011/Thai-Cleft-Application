@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   ArrowLeft,
   Calendar, 
@@ -14,79 +14,205 @@ import {
   Edit,
   PlusCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Home,
+  StickyNote,
+  CalendarPlus,
+  Printer,
+  ClipboardList
 } from 'lucide-react';
 import { Button } from "../../../../../components/ui/button";
 import { Badge } from "../../../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
 import { Separator } from "../../../../../components/ui/separator";
-import { format } from "date-fns";
-import { th } from "date-fns/locale";
+import FigmaConfirmDialog from "../../../../../components/shared/FigmaConfirmDialog";
+import { getPatientByHn } from "../../../../../data/patientData";
+
+// InfoItem with optional icon support (same pattern as HomeVisitRequestDetail)
+const InfoItem = ({ label, value, icon: Icon, valueClassName }: { label: string, value?: string, icon?: any, valueClassName?: string }) => (
+    <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 min-h-[48px] flex items-center gap-2 text-gray-700">
+            {Icon && <Icon size={16} className="text-gray-400 shrink-0" />}
+            <span className={valueClassName}>{value || '-'}</span>
+        </div>
+    </div>
+);
 
 interface AppointmentDetailPageProps {
-  appointment: any;
+  appointment?: any;
+  data?: any;
+  patient?: any;
   onBack: () => void;
-  onConfirm: () => void;
-  onCancel: () => void; // Cancel the appointment (change status)
-  onContact: () => void;
-  onEdit: () => void;
-  onAddRecord: () => void;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  onContact?: () => void;
+  onEdit?: () => void;
+  onAddRecord?: () => void;
+  onReschedule?: () => void;
+  onViewPatient?: () => void;
 }
 
 export function AppointmentDetailPage({
-  appointment,
+  appointment: appointmentProp,
+  data: dataProp,
+  patient,
   onBack,
   onConfirm,
   onCancel,
   onContact,
   onEdit,
-  onAddRecord
+  onAddRecord,
+  onReschedule,
+  onViewPatient
 }: AppointmentDetailPageProps) {
+  const appointment = appointmentProp || dataProp;
   if (!appointment) return null;
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+
+  // --- Data Normalization & Helpers (Matched with Mobile) ---
+
+  const formatDateDisplay = (dateStr: string) => {
+    if (!dateStr) return '-';
+    // If already contains Thai characters, normalize 4-digit year to 2-digit
+    if (/[ก-ู]/.test(dateStr)) {
+      const m = dateStr.match(/^(\d{1,2}\s+\S+\s+)(25\d{2})$/);
+      if (m) return m[1] + m[2].slice(-2);
+      return dateStr;
+    }
+    // Try to parse YYYY-MM-DD
+    const parts = dateStr.split('T')[0].split('-');
+    if (parts.length === 3) {
+      const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+        'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      const year = String(parseInt(parts[0]) + 543).slice(-2);
+      const month = monthNames[parseInt(parts[1]) - 1];
+      const day = parseInt(parts[2]);
+      return `${day} ${month} ${year}`;
+    }
+    // Fallback
+    try {
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) {
+            return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+        }
+    } catch (e) {}
+    return dateStr;
+  };
+
+  const getStatusConfig = (status: string) => {
+    const s = (status || '').toLowerCase();
+    
+    // Warning / Pending / Waiting
+    if (['waiting', 'pending', 'รอพบแพทย์', 'รอตรวจ', 'รอการยืนยัน'].includes(s)) {
+        return { color: 'bg-orange-100 text-orange-700 border-orange-200', text: 'รอตรวจ', icon: <AlertCircle size={14} />, badgeVariant: 'secondary', key: 'waiting' };
+    }
+    // Success / Confirmed / Completed
+    if (['confirmed', 'checked-in', 'accepted', 'ยืนยันแล้ว', 'มาตามนัด'].includes(s)) {
+        return { color: 'bg-blue-100 text-blue-700 border-blue-200', text: 'ยืนยันแล้ว', icon: <CheckCircle2 size={14} />, badgeVariant: 'default', key: 'confirmed' };
+    }
+    if (['completed', 'done', 'success', 'เสร็จสิ้น'].includes(s)) {
+        return { color: 'bg-green-100 text-green-700 border-green-200', text: 'เสร็จสิ้น', icon: <CheckCircle2 size={14} />, badgeVariant: 'outline', key: 'completed' };
+    }
+    // Error / Cancelled
+    if (['cancelled', 'missed', 'rejected', 'ยกเลิก', 'ขาดนัด'].includes(s)) {
+        return { color: 'bg-red-100 text-red-700 border-red-200', text: s === 'missed' || s === 'ขาดนัด' ? 'ขาดนัด' : 'ยกเลิก', icon: <AlertCircle size={14} />, badgeVariant: 'destructive', key: 'cancelled' };
+    }
+    
+    // Default
+    return { color: 'bg-gray-100 text-gray-700 border-gray-200', text: status || '-', icon: <AlertCircle size={14} />, badgeVariant: 'outline', key: 'default' };
+  };
+
+  const statusConfig = getStatusConfig(appointment.status || appointment.apptStatus);
+
+  // Derive Patient Data (Use passed patient prop or fallback to appointment fields)
+  const patientHN = patient?.hn || appointment.hn || appointment.patientId || '-';
+  
+  // Single source lookup from PATIENTS_DATA
+  const patientRecord = getPatientByHn(patientHN);
+
+  const patientName = patientRecord?.name || patient?.name || appointment.patientName || appointment.name || 'ไม่ระบุชื่อ';
+  const patientImage = patientRecord?.image || patient?.image || appointment.patientImage || "https://api.dicebear.com/7.x/avataaars/svg?seed=default";
+  const patientPhone = patient?.contact?.phone || patient?.phone || appointment.phone || '08x-xxx-xxxx';
+  const patientRights = patient?.rights || appointment.rights || 'บัตรทอง';
+  const patientId = patient?.id || appointment.patientId || appointment.id;
+
+  // Age/gender/diagnosis from PATIENTS_DATA single source
+  const patientDob = patientRecord?.dob || patient?.dob || appointment.patientDob;
+  const patientGender = patientRecord?.gender || patient?.gender || appointment.patientGender;
+  const patientDiagnosis = patientRecord?.diagnosis || patient?.diagnosis || appointment.diagnosis || '-';
+  const patientAge = (() => {
+    if (!patientDob) return null;
+    const dob = new Date(patientDob);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const md = today.getMonth() - dob.getMonth();
+    if (md < 0 || (md === 0 && today.getDate() < dob.getDate())) age--;
+    return age;
+  })();
+  const patientAgeGenderText = [
+    patientAge !== null ? `${patientAge} ปี` : null,
+    patientGender || null
+  ].filter(Boolean).join(' / ') || '-';
+
+  // Derive Appointment Data
+  const requestDate = appointment.requestDate || appointment.createdDate || '-';
+  const apptDate = appointment.date || appointment.date_time || appointment.appointmentDate;
+  const apptTime = appointment.time || (appointment.date_time ? (() => { try { const d = new Date(appointment.date_time); return !isNaN(d.getTime()) ? d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }) : '08:00'; } catch { return '08:00'; } })() : '08:00 - 12:00');
+  const location = appointment.location || appointment.hospital || appointment.department || '-';
+  const room = appointment.room || appointment.roomName || (appointment.raw && appointment.raw.room) || '-';
+  const title = appointment.title || appointment.type || appointment.treatment || '-';
+  const doctor = appointment.doctor || appointment.doctor_name || appointment.doctorName || '-';
+  const note = appointment.note || appointment.reason || '-';
+  const recorder = appointment.recorder || 'สภัคศิริ สุวิวัฒนา'; // Match Mobile Default
+
+  // Aliases for user's code template
+  const data = appointment;
+  const formatThaiDate = formatDateDisplay;
+  const parsedDate = apptDate;
+  const displayTime = apptTime ? (apptTime.includes('น.') ? apptTime : `${apptTime} น.`) : '-';
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-20 font-['Montserrat','Noto_Sans_Thai',sans-serif]">
+    <div className="space-y-6 animate-in fade-in duration-300 pb-20 font-['IBM_Plex_Sans_Thai']">
       
-      {/* Header Banner */}
-      <div className="bg-[rgb(255,255,255)] p-4 rounded-[6px] shadow-sm border border-[#DFF6F8]/50 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-slate-100 text-[#5e5873]">
-                <ArrowLeft className="w-5 h-5" />
-            </Button>
+      {/* Header Banner — matching FundRequestDetailPage */}
+      <div className="bg-[rgb(255,255,255)] p-4 rounded-[6px] shadow-sm border border-[#EBE9F1]/50 flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-slate-100 text-[#5e5873]">
+              <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+              <h1 className="text-[#5e5873] font-bold text-lg">
+                  รายละเอียดนัดหมาย {appointment.id || appointment.appointment_id || ''}
+              </h1>
+              <p className="text-xs text-gray-500 mt-1">
+                  ข้อมูลรายละเอียดและบันทึกการนัดหมาย
+              </p>
+          </div>
+          <Button variant="outline" size="icon" className="shrink-0 text-gray-500 border-gray-200 hover:bg-slate-50 hover:text-[#7367f0]" onClick={() => window.print()}>
+              <Printer className="w-4 h-4" />
+          </Button>
+      </div>
+
+      {/* Blue Appointment Date Banner (matching Mobile AppointmentDetail) */}
+      {statusConfig.key !== 'cancelled' && apptDate && (
+        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
+            <div className="bg-white p-2.5 rounded-full shadow-sm border border-blue-100">
+                <Calendar className="text-blue-600 w-5 h-5" />
+            </div>
             <div>
-                <h1 className="text-[#5e5873] font-bold text-lg flex items-center gap-2">
-                    รายละเอียดนัดหมาย
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-gray-500">ID: {appointment.id}</span>
-                    <Separator orientation="vertical" className="h-3" />
-                    {appointment.status === 'Confirmed' && <Badge className="bg-green-100 text-green-600 border-green-200 hover:bg-green-200">ยืนยันแล้ว</Badge>}
-                    {appointment.status === 'Pending' && <Badge className="bg-orange-100 text-orange-600 border-orange-200 hover:bg-orange-200">รอการยืนยัน</Badge>}
-                    {appointment.status === 'Cancelled' && <Badge className="bg-red-100 text-red-600 border-red-200 hover:bg-red-200">ยกเลิก</Badge>}
-                    {appointment.status === 'Missed' && <Badge className="bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200">ขาดนัด</Badge>}
-                    {appointment.status === 'Completed' && <Badge className="bg-blue-100 text-blue-600 border-blue-200 hover:bg-blue-200">เสร็จสิ้น</Badge>}
-                </div>
+                <span className="text-sm text-blue-600 font-semibold block mb-0.5">วันนัดหมาย</span>
+                <span className="text-blue-900 font-bold text-lg">
+                    {formatDateDisplay(apptDate)}
+                </span>
+                {apptTime && (
+                  <span className="text-blue-700 text-sm ml-2">
+                      {apptTime.includes('น.') ? apptTime : `${apptTime} น.`}
+                  </span>
+                )}
             </div>
         </div>
-        
-        <div className="flex gap-2">
-            {appointment.status === 'Pending' && (
-                <>
-                    <Button variant="outline" className="text-red-600 hover:bg-red-50 border-red-200" onClick={onCancel}>
-                        <XCircle className="w-4 h-4 mr-2" /> ยกเลิกนัด
-                    </Button>
-                    <Button className="bg-[#7367f0] hover:bg-[#685dd8] text-white shadow-sm" onClick={onConfirm}>
-                        <CheckCircle2 className="w-4 h-4 mr-2" /> ยืนยันนัดหมาย
-                    </Button>
-                </>
-            )}
-            {appointment.status === 'Confirmed' && (
-                 <Button variant="outline" className="text-red-600 hover:bg-red-50 border-red-200" onClick={onCancel}>
-                    <XCircle className="w-4 h-4 mr-2" /> ยกเลิกนัด
-                </Button>
-            )}
-        </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           
@@ -94,103 +220,127 @@ export function AppointmentDetailPage({
           <div className="lg:col-span-2 space-y-6">
               
               {/* Patient Info Card */}
-              <Card className="border-[#EBE9F1] shadow-sm">
-                  <CardHeader className="pb-3 border-b border-[#EBE9F1]">
-                      <CardTitle className="text-base font-semibold text-[#5e5873] flex items-center gap-2">
-                          <User className="w-5 h-5 text-[#7367f0]" /> ข้อมูลผู้ป่วย
+              <Card className="border-gray-100 shadow-sm rounded-xl overflow-hidden">
+                  <CardHeader className="pb-3 border-b border-gray-50">
+                      <CardTitle className="text-lg text-[#5e5873] flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                              <User className="w-5 h-5 text-[#7367f0]" /> ข้อมูลผู้ป่วย
+                          </div>
+                          <span className={`px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 ${statusConfig.color}`}>
+                              {statusConfig.text}
+                          </span>
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6">
-                      <div className="flex items-start gap-6">
-                          <div className="w-20 h-20 rounded-full bg-[#E0E7FF] flex items-center justify-center text-[#7367f0] shrink-0 border-4 border-white shadow-sm">
-                              <User className="w-10 h-10" />
+                      <div className="flex items-center gap-5">
+                          <div className="w-[72px] h-[72px] bg-gray-100 rounded-full shrink-0 overflow-hidden border-2 border-white shadow">
+                              <img 
+                                  src={patient?.image || patientImage}
+                                  alt={patient?.name || patientName}
+                                  className="w-full h-full object-cover"
+                              />
                           </div>
-                          <div className="flex-1 space-y-3">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                  <div>
-                                      <h3 className="text-xl font-bold text-[#5e5873]">{appointment.patientName}</h3>
-                                      <p className="text-sm text-gray-500 font-medium">HN: {appointment.hn}</p>
-                                  </div>
-                                  <div className="flex gap-2">
-                                      <Button variant="outline" size="sm" className="gap-2" onClick={onContact}>
-                                          <Phone className="w-3.5 h-3.5" /> ติดต่อ
-                                      </Button>
-                                      <Button variant="outline" size="sm" className="gap-2" onClick={onEdit}>
-                                          <Edit className="w-3.5 h-3.5" /> แก้ไขข้อมูล
-                                      </Button>
-                                  </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                  <div className="space-y-1">
-                                      <p className="text-xs text-gray-400">เบอร์โทรศัพท์</p>
-                                      <p className="text-sm font-medium text-gray-700">08x-xxx-xxxx</p>
-                                  </div>
-                                  <div className="space-y-1">
-                                      <p className="text-xs text-gray-400">สิทธิการรักษา</p>
-                                      <p className="text-sm font-medium text-gray-700">บัตรทอง</p>
-                                  </div>
-                              </div>
+                          <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-slate-800 text-xl truncate">{patient?.name || patientName}</h3>
+                              <p className="text-sm text-slate-500">HN: {patient?.hn || patientHN}</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                              <Button variant="outline" size="sm" className="gap-1.5 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50">
+                                  <Phone className="w-4 h-4" /> ติดต่อ
+                              </Button>
+                              <Button variant="outline" size="sm" className="gap-1.5 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50">
+                                  <ClipboardList className="w-4 h-4" /> ดูประวัติ
+                              </Button>
+                          </div>
+                      </div>
+
+                      {/* Info strip: อายุ/เพศ + ผลการวินิจฉัย */}
+                      <div className="grid grid-cols-2 mt-5 bg-[#F4F9FF] rounded-lg border border-blue-100/60 overflow-hidden">
+                          <div className="px-5 py-3 border-r border-blue-100/60">
+                              <span className="text-xs text-slate-500 block mb-0.5">อายุ / เพศ</span>
+                              <span className="text-sm text-slate-800 font-semibold">{patientAgeGenderText}</span>
+                          </div>
+                          <div className="px-5 py-3">
+                              <span className="text-xs text-slate-500 block mb-0.5">ผลการวินิจฉัย</span>
+                              <span className="text-sm text-slate-800 font-semibold">{patientDiagnosis}</span>
                           </div>
                       </div>
                   </CardContent>
               </Card>
 
-              {/* Appointment Details Card */}
-              <Card className="border-[#EBE9F1] shadow-sm">
-                   <CardHeader className="pb-3 border-b border-[#EBE9F1]">
-                      <CardTitle className="text-base font-semibold text-[#5e5873] flex items-center gap-2">
-                          <FileText className="w-5 h-5 text-[#7367f0]" /> รายละเอียดการนัดหมาย
-                      </CardTitle>
+              {/* Appointment Detail Card */}
+              <Card className="border-gray-100 shadow-sm overflow-hidden bg-white rounded-xl">
+                  <CardHeader className="bg-[#f8f8f8] border-b border-gray-100 pb-4">
+                      <div className="flex items-center gap-3">
+                          <div className="bg-[#4285f4]/10 p-2 rounded-lg text-[#4285f4]">
+                              <Calendar size={24} />
+                          </div>
+                          <div>
+                              <CardTitle className="text-lg text-[#5e5873]">ข้อมูลนัดหมาย</CardTitle>
+                          </div>
+                      </div>
                   </CardHeader>
-                  <CardContent className="pt-6 space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                          <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                  <Calendar className="w-4 h-4 text-[#7367f0]" /> วันที่นัด
+                  <CardContent className="p-6 space-y-6">
+                      
+                      {/* Date & Time Section */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InfoItem label="วันที่สร้างคำขอ" value={formatThaiDate(data.requestDate)} icon={Calendar} />
+                          <InfoItem label="วันที่นัดหมาย" value={formatThaiDate(parsedDate)} icon={CalendarPlus} />
+                          <InfoItem label="เวลา" value={displayTime} icon={Clock} />
+                      </div>
+
+                      {/* Location Section */}
+                      <div className="space-y-3">
+                          <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                              <div className="bg-[#7367f0]/10 p-2 rounded-lg text-[#7367f0]">
+                                  <MapPin size={20} />
                               </div>
-                              <p className="font-semibold text-gray-800 text-lg pl-6">
-                                  {format(new Date(appointment.date), "d MMMM yyyy", { locale: th })}
-                              </p>
+                              <h3 className="font-bold text-lg text-[#5e5873]">สถานที่</h3>
                           </div>
-                          <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                  <Clock className="w-4 h-4 text-[#7367f0]" /> เวลา
-                              </div>
-                              <p className="font-semibold text-gray-800 text-lg pl-6">{appointment.time} น.</p>
-                          </div>
-                          <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                  <Building2 className="w-4 h-4 text-[#7367f0]" /> โรงพยาบาล
-                              </div>
-                              <p className="font-semibold text-gray-800 pl-6">{appointment.hospital}</p>
-                          </div>
-                          <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                  <MapPin className="w-4 h-4 text-[#7367f0]" /> แผนก/คลินิก
-                              </div>
-                              <p className="font-semibold text-gray-800 pl-6">{appointment.clinic}</p>
-                          </div>
-                          <div className="space-y-2 md:col-span-2">
-                              <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                  <Stethoscope className="w-4 h-4 text-[#7367f0]" /> แพทย์ผู้ตรวจ
-                              </div>
-                              <div className="flex items-center gap-3 mt-1 pl-6">
-                                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                                      <User className="w-4 h-4 text-slate-500" />
-                                  </div>
-                                  <span className="font-medium text-gray-800">{appointment.doctorName || "ไม่ระบุแพทย์"}</span>
-                              </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <InfoItem label="โรงพยาบาล" value={data.location || data.hospital || '-'} icon={MapPin} />
+                              <InfoItem label="ห้องตรวจ" value={data.room || data.roomName || (data.raw && data.raw.room) || '-'} icon={Home} />
                           </div>
                       </div>
 
-                      <div className="bg-[#FFF4E5] p-4 rounded-lg border border-[#FFE0B2]">
-                          <div className="flex items-center gap-2 text-orange-800 text-sm font-semibold mb-2">
-                              <AlertCircle className="w-4 h-4" /> หมายเหตุ / อาการเบื้องต้น
+                      {/* Medical Info Section */}
+                      <div className="space-y-3">
+                          <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                              <div className="bg-[#7367f0]/10 p-2 rounded-lg text-[#7367f0]">
+                                  <Stethoscope size={20} />
+                              </div>
+                              <h3 className="font-bold text-lg text-[#5e5873]">ข้อมูลการรักษา</h3>
                           </div>
-                          <p className="text-sm text-orange-900/80 leading-relaxed pl-6">
-                              {appointment.note || "ไม่มีรายละเอียดเพิ่มเติม"}
-                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <InfoItem label="การรักษา / หัวข้อนัดหมาย" value={data.title || data.type || data.treatment || '-'} icon={CalendarPlus} />
+                              <InfoItem label="ชื่อผู้ที่รักษา" value={data.doctor || '-'} icon={User} />
+                          </div>
+                      </div>
+
+                      {/* Note Section */}
+                      <div className="space-y-3">
+                          <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                              <div className="bg-[#7367f0]/10 p-2 rounded-lg text-[#7367f0]">
+                                  <StickyNote size={20} />
+                              </div>
+                              <h3 className="font-bold text-lg text-[#5e5873]">รายละเอียดการนัดหมาย</h3>
+                          </div>
+                          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 min-h-[100px]">
+                              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                                  {data.note || data.reason || data.detail || '-'}
+                              </p>
+                          </div>
+                      </div>
+
+                      {/* Recorder */}
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="flex items-center gap-2">
+                              <User className="text-gray-400" size={16} />
+                              <span className="text-sm text-gray-500 font-medium">ผู้บันทึกข้อมูล</span>
+                          </div>
+                          <span className="text-sm text-gray-700 font-medium">
+                              {data.recorder || 'สภัคศิริ สุวิวัฒนา'}
+                          </span>
                       </div>
                   </CardContent>
               </Card>
@@ -200,12 +350,34 @@ export function AppointmentDetailPage({
           <div className="space-y-6">
               
               {/* Actions Card */}
-              <Card className="border-[#EBE9F1] shadow-sm">
-                  <CardHeader className="pb-3 border-b border-[#EBE9F1] bg-gray-50/50">
-                      <CardTitle className="text-base font-semibold text-[#5e5873]">การดำเนินการ</CardTitle>
+              <Card className="border-gray-100 shadow-sm">
+                  <CardHeader className="pb-3 border-b border-gray-50">
+                      <CardTitle className="text-lg text-[#5e5873]">การดำเนินการ</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-3">
-                       {appointment.status !== 'Completed' && appointment.status !== 'Cancelled' && (
+                       {/* Pending Status Actions: Cancel & Confirm */}
+                       {statusConfig.text === 'รอตรวจ' && (
+                           <>
+                                {onConfirm && (
+                                    <Button 
+                                        className="w-full bg-[#7367f0] hover:bg-[#685dd8] text-white shadow-sm h-11"
+                                        onClick={() => setShowConfirmDialog(true)}
+                                    >
+                                        <CheckCircle2 className="w-4 h-4 mr-2" /> ยืนยันนัดหมาย
+                                    </Button>
+                                )}
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full text-red-600 hover:bg-red-50 border-red-200 h-11"
+                                    onClick={() => setShowCancelDialog(true)}
+                                >
+                                    <XCircle className="w-4 h-4 mr-2" /> ยกเลิกนัดหมาย
+                                </Button>
+                           </>
+                       )}
+
+                       {/* Confirmed Status Actions: Record Treatment */}
+                       {statusConfig.text === 'ยืนยันแล้ว' && onAddRecord && (
                           <Button 
                               variant="default" 
                               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-sm h-11"
@@ -215,32 +387,37 @@ export function AppointmentDetailPage({
                           </Button>
                        )}
                        
-                       <Button variant="outline" className="w-full justify-start h-10 border-gray-200 text-gray-600 hover:text-[#7367f0] hover:bg-slate-50">
-                           <FileText className="w-4 h-4 mr-2" /> ดูประวัติการรักษา
+                       <Button variant="outline" className="w-full h-10 border-gray-200 text-gray-600 hover:text-[#7367f0] hover:bg-slate-50" onClick={onEdit}>
+                           <Edit className="w-4 h-4 mr-2" /> แก้ไขนัดหมาย
                        </Button>
                   </CardContent>
               </Card>
 
-              {/* Status Timeline Card (Mock) */}
-              <Card className="border-[#EBE9F1] shadow-sm">
-                  <CardHeader className="pb-3 border-b border-[#EBE9F1]">
-                      <CardTitle className="text-base font-semibold text-[#5e5873]">สถานะการติดตาม</CardTitle>
+              {/* Status Timeline Card */}
+              <Card className="border-gray-100 shadow-sm">
+                  <CardHeader className="pb-3 border-b border-gray-50">
+                      <CardTitle className="text-lg text-[#5e5873]">สถานะการติดตาม</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6">
                       <div className="relative pl-4 border-l-2 border-gray-100 space-y-6">
+                          {/* Created */}
                           <div className="relative">
                               <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-green-500 ring-4 ring-white"></div>
                               <p className="text-sm font-semibold text-[#5e5873]">สร้างนัดหมาย</p>
-                              <p className="text-xs text-gray-400">โดย {appointment.createdBy || "System"}</p>
+                              <p className="text-xs text-gray-400">{requestDate !== '-' ? requestDate : '-'}</p>
                           </div>
+                          
+                          {/* Confirmed */}
                           <div className="relative">
-                              <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ring-4 ring-white ${appointment.status !== 'Pending' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                              <p className={`text-sm font-semibold ${appointment.status !== 'Pending' ? 'text-[#5e5873]' : 'text-gray-400'}`}>ยืนยันนัดหมาย</p>
+                              <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ring-4 ring-white ${statusConfig.text === 'ยืนยันแล้ว' || statusConfig.text === 'เสร็จสิ้น' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                              <p className={`text-sm font-semibold ${statusConfig.text === 'ยืนยันแล้ว' || statusConfig.text === 'เสร็จสิ้น' ? 'text-[#5e5873]' : 'text-gray-400'}`}>ยืนยันนัดหมาย</p>
                               <p className="text-xs text-gray-400">-</p>
                           </div>
+
+                          {/* Completed */}
                           <div className="relative">
-                              <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ring-4 ring-white ${appointment.status === 'Completed' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                              <p className={`text-sm font-semibold ${appointment.status === 'Completed' ? 'text-[#5e5873]' : 'text-gray-400'}`}>ตรวจเสร็จสิ้น</p>
+                              <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ring-4 ring-white ${statusConfig.text === 'เสร็จสิ้น' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                              <p className={`text-sm font-semibold ${statusConfig.text === 'เสร็จสิ้น' ? 'text-[#5e5873]' : 'text-gray-400'}`}>ตรวจเสร็จสิ้น</p>
                               <p className="text-xs text-gray-400">-</p>
                           </div>
                       </div>
@@ -248,6 +425,37 @@ export function AppointmentDetailPage({
               </Card>
           </div>
       </div>
+
+      {/* Confirm Appointment Dialog */}
+      <FigmaConfirmDialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        title="ยืนยันการเปลี่ยนสถานะนัดหมาย"
+        description={'คุณต้องการเปลี่ยนสถานะนัดหมายจาก "รอตรวจ" เป็น "ยืนยันแล้ว" หรือไม่?'}
+        cancelLabel="ยกเลิก"
+        confirmLabel="ยืนยัน"
+        onCancel={() => setShowConfirmDialog(false)}
+        onConfirm={() => {
+          onConfirm?.();
+          setShowConfirmDialog(false);
+        }}
+        variant="warning"
+      />
+
+      {/* Cancel Appointment Dialog */}
+      <FigmaConfirmDialog
+        isOpen={showCancelDialog}
+        onClose={() => setShowCancelDialog(false)}
+        title="ยืนยันการยกเลิก"
+        description="คุณต้องการลบนัดหมายนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถเรียกคืนได้"
+        cancelLabel="ยืนยันลบ"
+        confirmLabel="กลับ"
+        onCancel={() => {
+          onCancel?.();
+          setShowCancelDialog(false);
+        }}
+        onConfirm={() => setShowCancelDialog(false)}
+      />
     </div>
   );
 }
