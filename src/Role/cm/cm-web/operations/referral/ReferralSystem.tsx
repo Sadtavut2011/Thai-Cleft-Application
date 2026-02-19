@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from "../../../../../components/ui/button";
 import { Calendar } from "../../../../../components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../../components/ui/popover";
 import { Input } from "../../../../../components/ui/input";
 import { Badge } from "../../../../../components/ui/badge";
-import { Card, CardContent } from "../../../../../components/ui/card";
-import { Label } from "../../../../../components/ui/label";
+import { Card } from "../../../../../components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../../components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../../../../../components/ui/dialog";
-import { Textarea } from "../../../../../components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../../components/ui/table";
-import { Separator } from "../../../../../components/ui/separator";
 import { 
   ArrowLeft, 
   ArrowDown, 
@@ -21,117 +17,33 @@ import {
   Edit, 
   Trash2, 
   Filter, 
-  AlertTriangle,
   FileText,
-  User,
-  Ambulance,
-  ArrowRight,
+  Send,
+  Building,
   CheckCircle2,
   XCircle,
-  Stethoscope,
-  Building,
-  Send,
-  Upload
+  AlertTriangle,
+  ArrowDownToLine,
+  ArrowUpFromLine
 } from "lucide-react";
 import { cn } from "../../../../../components/ui/utils";
 import { toast } from "sonner";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameMonth, isSameDay } from "date-fns";
 import { th } from "date-fns/locale";
-import ReferralSystemDetail, { Referral, ReferralLog } from './ReferralSystemDetail';
+import { REFERRAL_DATA } from "../../../../../data/patientData";
+import ReferralSystemDetail from './ReferralSystemDetail';
 import ReferralAdd from './referralADD';
+import { formatThaiDateWithDay } from "../../../../../components/shared/ThaiCalendarDrawer";
+import { WebCalendarView, ViewModeToggle } from "../shared/WebCalendarView";
 
-// --- Mock Data ---
+const THAI_MONTHS_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
-const MOCK_REFERRALS: Referral[] = [
-  {
-    id: "REF-001",
-    referralNo: "REF-66-1024",
-    patientId: "P-001",
-    patientName: "ด.ช. สมชาย ใจดี",
-    patientHn: "HN-6600123",
-    referralDate: "2023-12-14T09:00:00",
-    lastUpdateDate: "2023-12-15T10:30:00",
-    type: 'Refer Out',
-    sourceHospital: "โรงพยาบาลฝาง",
-    destinationHospital: "โรงพยาบาลศิริราช",
-    reason: "ต้องการการผ่าตัดแก้ไขปากแหว่งเพดานโหว่ซับซ้อน",
-    diagnosis: "Cleft Lip and Palate (Bilateral)",
-    urgency: 'Routine',
-    status: 'Accepted',
-    documents: ["lab_results.pdf", "xray_film.jpg"],
-    destinationContact: "คุณพยาบาล วิไล (Case Manager)",
-    logs: [
-      { date: "2023-12-14T09:00:00", status: "Created", description: "สร้างคำขอส่งตัว", actor: "SCFC Staff (คุณสมศรี)" },
-      { date: "2023-12-14T10:15:00", status: "Sent", description: "ส่งคำขอไปยังปลายทาง", actor: "System" },
-      { date: "2023-12-15T09:00:00", status: "Viewed", description: "ปลายทางเปิดอ่านข้อมูล", actor: "R.Siriraj Staff" },
-      { date: "2023-12-15T10:30:00", status: "Accepted", description: "ตอบรับการส่งตัว นัดหมายวันที่ 20 ธ.ค.", actor: "นพ. ผู้เชี่ยวชาญ (ศิริราช)" },
-    ]
-  },
-  {
-    id: "REF-002",
-    referralNo: "REF-66-1025",
-    patientId: "P-002",
-    patientName: "น.ส. มานี มีนา",
-    patientHn: "HN-6600124",
-    referralDate: "2023-12-15T13:00:00",
-    lastUpdateDate: "2023-12-15T13:00:00",
-    type: 'Refer Out',
-    sourceHospital: "โรงพยาบาลฝาง",
-    destinationHospital: "โรงพยาบาลมหาราชนครเชียงใหม่",
-    reason: "ปรึกษาทันตกรรมจัดฟันร่วมกับการผ่าตัดขากรรไกร",
-    diagnosis: "Skeletal Class III Malocclusion",
-    urgency: 'Routine',
-    status: 'Pending',
-    documents: ["dental_records.pdf"],
-    logs: [
-      { date: "2023-12-15T13:00:00", status: "Created", description: "สร้างคำขอส่งตัว", actor: "SCFC Staff (คุณสมศรี)" },
-      { date: "2023-12-15T13:05:00", status: "Sent", description: "ส่งคำขอไปยังปลายทาง", actor: "System" },
-    ]
-  },
-  {
-    id: "REF-003",
-    referralNo: "REF-66-1020",
-    patientId: "P-003",
-    patientName: "นาย ปิติ ยินดี",
-    patientHn: "HN-6600111",
-    referralDate: "2023-12-10T08:30:00",
-    lastUpdateDate: "2023-12-11T14:20:00",
-    type: 'Refer Out',
-    sourceHospital: "โรงพยาบาลฝาง",
-    destinationHospital: "โรงพยาบาลศูนย์ขอนแก่น",
-    reason: "Speech Therapy Consultation",
-    diagnosis: "Hypernasality",
-    urgency: 'Urgent',
-    status: 'Rejected',
-    documents: ["speech_assessment.pdf"],
-    destinationContact: "-",
-    logs: [
-      { date: "2023-12-10T08:30:00", status: "Created", description: "สร้างคำขอส่งตัว", actor: "SCFC Staff" },
-      { date: "2023-12-10T08:45:00", status: "Sent", description: "ส่งคำขอไปยังปลายทาง", actor: "System" },
-      { date: "2023-12-11T14:20:00", status: "Rejected", description: "ปฏิเสธ: คิวเต็ม กรุณาส่งต่อ รพ. อื่น", actor: "จนท. รับเรื่อง (ขอนแก่น)" },
-    ]
-  },
-  {
-    id: "REF-004",
-    referralNo: "REF-IN-66-0001",
-    patientId: "P-004",
-    patientName: "นาย รักษา ดี",
-    patientHn: "HN-6600999",
-    referralDate: "2023-12-16T11:00:00",
-    lastUpdateDate: "2023-12-16T11:00:00",
-    type: 'Refer In',
-    sourceHospital: "โรงพยาบาลเชียงรายประชานุเคราะห์",
-    destinationHospital: "โรงพยาบาลฝาง",
-    reason: "ส่งกลับมารักษาต่อใกล้บ้าน (Continuity of Care)",
-    diagnosis: "Post-op Cleft Palate Repair",
-    urgency: 'Routine',
-    status: 'Pending',
-    documents: ["discharge_summary.pdf"],
-    logs: [
-      { date: "2023-12-16T11:00:00", status: "Created", description: "สร้างคำขอส่งตัว (Refer In)", actor: "R.Chiangrai Staff" },
-    ]
-  },
-];
+function toISODateString(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function isSameDateStr(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
 
 interface ReferralSystemProps {
   onBack?: () => void;
@@ -139,233 +51,261 @@ interface ReferralSystemProps {
 }
 
 export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProps) {
-  const [view, setView] = useState<'list' | 'create' | 'detail'>('list');
-  const [selectedReferral, setSelectedReferral] = useState<Referral | null>(null);
-  const [referrals, setReferrals] = useState<Referral[]>(MOCK_REFERRALS);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [referralDirection, setReferralDirection] = useState<'Refer Out' | 'Refer In' | 'History'>('Refer Out');
-  const [historyFilter, setHistoryFilter] = useState<'Refer In' | 'Refer Out'>('Refer In');
+  // --- State from Mobile Logic ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); 
+  const [filterStatus, setFilterStatus] = useState<string>("All");
+  
+  const [referralType, setReferralType] = useState<'Refer Out' | 'Refer In' | 'History'>('Refer Out');
+  const [historyType, setHistoryType] = useState<'All' | 'Refer In' | 'Refer Out'>('All');
+  
+  const [selectedReferral, setSelectedReferral] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [filterSourceHospital, setFilterSourceHospital] = useState<string>("all");
+  const [filterDestHospital, setFilterDestHospital] = useState<string>("all");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [calendarDate, setCalendarDate] = useState<string | null>(null);
+  const [calendarSubTab, setCalendarSubTab] = useState<string>('Refer In');
 
-  // Create Form State
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [newReferral, setNewReferral] = useState<Partial<Referral>>({
-    type: 'Refer Out',
-    urgency: 'Routine',
-    documents: []
-  });
+  // Use Centralized Data (same as Mobile)
+  const [referrals, setReferrals] = useState<any[]>(REFERRAL_DATA);
 
-  // Delete Dialog State
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [targetReferral, setTargetReferral] = useState<Referral | null>(null);
+  // Dynamic hospital lists from mock data
+  const uniqueSourceHospitals = useMemo(() => {
+    const set = new Set<string>();
+    referrals.forEach(r => {
+      const src = r.hospital || r.sourceHospital;
+      if (src) set.add(src);
+    });
+    return Array.from(set);
+  }, [referrals]);
+
+  const uniqueDestHospitals = useMemo(() => {
+    const set = new Set<string>();
+    referrals.forEach(r => {
+      const dst = r.destinationHospital || r.destination;
+      if (dst) set.add(dst);
+    });
+    return Array.from(set);
+  }, [referrals]);
 
   // Initial HN Effect
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialHN) {
       setSearchTerm(initialHN);
+      const found = referrals.find(r => r.hn === initialHN || r.patientHn === initialHN);
+      if (found) {
+        setSelectedReferral(found);
+      }
     }
-  }, [initialHN]);
+  }, [initialHN, referrals]);
 
-  // --- Handlers ---
+  // --- Logic from Mobile ---
+  
+  const filtered = referrals.filter(r => {
+    const matchesSearch = (r.patientName || '').includes(searchTerm) || (r.hn || '').includes(searchTerm) || (r.referralNo || '').includes(searchTerm);
+    
+    // Combined status filter: standard status check AND new filter menu check
+    const matchesStatus = (statusFilter === 'all' || r.status === statusFilter) && 
+                          (filterStatus === 'All' || r.status === filterStatus);
+    
+    const matchesDate = selectedDate ? isSameDateStr(new Date(r.referralDate || r.date), new Date(selectedDate)) : true;
+
+    // Hospital filters
+    const matchesSource = filterSourceHospital === 'all' || (r.hospital || r.sourceHospital || '').includes(filterSourceHospital);
+    const matchesDest = filterDestHospital === 'all' || (r.destinationHospital || r.destination || '').includes(filterDestHospital);
+
+    // UX/UI Logic: Status Lifecycle Definition (Matched with Mobile)
+    const activeStatuses = ['Pending', 'Accepted', 'NotTreated', 'Waiting', 'Arrived', 'Treating', 'pending', 'accepted', 'referred', 'WaitingReceive'];
+    const terminalStatuses = ['Treated', 'Rejected', 'Completed', 'Cancelled', 'NoShow', 'treated', 'rejected', 'completed', 'cancelled', 'Canceled'];
+
+    let matchesType = false;
+    if (referralType === 'History') {
+        // History Menu: Show ALL statuses (matched with HomeVisit pattern)
+        matchesType = true;
+        
+        // Apply Sub-filter for History
+        if (historyType !== 'All') {
+            matchesType = r.type === historyType;
+        }
+    } else {
+        // Operational Menu: Show only Active states
+        matchesType = r.type === referralType && activeStatuses.includes(r.status);
+    }
+    
+    // Role Isolation Logic (Matched with Mobile)
+    if (referralType === 'Refer Out') {
+        const isCreatedByCM = r.creatorRole === 'CM' || (!r.creatorRole && !r.hospital?.includes('รพ.สต.'));
+        matchesType = matchesType && isCreatedByCM;
+    }
+
+    return matchesSearch && matchesStatus && matchesType && matchesDate && matchesSource && matchesDest;
+  });
+
+  // Helper for Status Badge (Matched with Mobile colors)
+  const renderStatusBadge = (status: string) => {
+      switch(status) {
+          case 'Pending':
+          case 'pending':
+              return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200 font-normal">รอการตอบรับ</Badge>;
+          case 'Accepted':
+          case 'accepted':
+              return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200 font-normal">รอรับตัว</Badge>;
+          case 'WaitingReceive':
+              return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200 font-normal">รอรับตัว</Badge>;
+          case 'Rejected':
+          case 'rejected':
+              return <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200 font-normal">ถูกปฏิเสธ</Badge>;
+          case 'Examined':
+              return <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200 border-teal-200 font-normal">ตรวจแล้ว</Badge>;
+          case 'Completed':
+          case 'completed':
+          case 'Treated':
+          case 'treated':
+              return <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 font-normal">เสร็จสิ้น</Badge>;
+          case 'Cancelled':
+          case 'cancelled':
+          case 'Canceled':
+              return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200 font-normal">ยกเลิก</Badge>;
+          default:
+              return <Badge className="bg-gray-100 text-gray-600 font-normal">{status}</Badge>;
+      }
+  };
 
   const handleCreateClick = () => {
-    setIsEditMode(false);
-    setNewReferral({
-      type: 'Refer Out',
-      urgency: 'Routine',
-      documents: [],
-      referralDate: new Date().toISOString(),
-      status: 'Pending',
-      sourceHospital: 'โรงพยาบาลฝาง'
-    });
-    setView('create');
+    // Logic to open create modal (omitted for brevity as focusing on list logic)
+    setIsCreateOpen(true);
   };
 
-  const handleEditClick = (referral: Referral) => {
-    setIsEditMode(true);
-    setNewReferral({
-      ...referral,
-      patientName: `${referral.patientName} (${referral.patientHn})`
-    });
-    setView('create');
+  const handleDelete = (id: any) => {
+    setReferrals(prev => prev.filter(r => r.id !== id));
+    toast.success("ลบรายการเรียบร้อยแล้ว");
   };
 
-  const handleViewDetail = (referral: Referral) => {
-    setSelectedReferral(referral);
-    setView('detail');
-  };
+  // --- Early returns for full-page sub-views (same pattern as AppointmentSystem / HomeVisitSystem) ---
 
-  const handleDetailAccept = (date: Date, note: string) => {
-    if (!selectedReferral) return;
-    
-    const formattedDate = format(date, "d MMM yyyy", { locale: th });
-    
-    const updatedLogs: ReferralLog[] = [...selectedReferral.logs, { 
-      date: new Date().toISOString(), 
-      status: 'Accepted', 
-      description: `ตอบรับการส่งตัว (นัดหมาย: ${formattedDate})${note ? ` - ${note}` : ''}`, 
-      actor: 'โรงพยาบาลฝาง' 
-    }];
-
-    const updatedReferral = {
-        ...selectedReferral,
-        status: 'Accepted' as const,
-        logs: updatedLogs
-    };
-
-    setReferrals(referrals.map(r => r.id === selectedReferral.id ? updatedReferral : r));
-    setSelectedReferral(updatedReferral);
-    toast.success("ตอบรับการส่งตัวเรียบร้อยแล้ว");
-  };
-
-  const handleDetailCancel = (reason: string) => {
-    if (!selectedReferral) return;
-
-    const updatedLogs: ReferralLog[] = [...selectedReferral.logs, { 
-      date: new Date().toISOString(), 
-      status: 'Canceled', 
-      description: `ยกเลิกคำขอ: ${reason}`, 
-      actor: 'SCFC Staff' 
-    }];
-
-    const updatedReferral = {
-        ...selectedReferral,
-        status: 'Canceled' as const,
-        logs: updatedLogs
-    };
-
-    setReferrals(referrals.map(r => r.id === selectedReferral.id ? updatedReferral : r));
-    setSelectedReferral(updatedReferral);
-    toast.success("ยกเลิกคำขอส่งตัวเรียบร้อยแล้ว");
-  };
-
-  const handleConfirmDelete = () => {
-    if (targetReferral) {
-        setReferrals(prev => prev.filter(r => r.id !== targetReferral.id));
-        toast.success("ลบคำขอเรียบร้อยแล้ว");
-        setIsDeleteOpen(false);
-        setTargetReferral(null);
-    }
-  };
-
-  const handleSubmitCreate = () => {
-    // Mock Submit
-    const created: Referral = {
-      id: `REF-${Math.floor(Math.random() * 1000)}`,
-      referralNo: `REF-66-${Math.floor(Math.random() * 10000)}`,
-      patientId: "P-NEW",
-      patientName: newReferral.patientName || "New Patient",
-      patientHn: newReferral.patientHn || "HN-NEW",
-      referralDate: new Date().toISOString(),
-      lastUpdateDate: new Date().toISOString(),
-      type: 'Refer Out',
-      sourceHospital: "โรงพยาบาลฝาง",
-      destinationHospital: newReferral.destinationHospital || "Unknown",
-      reason: newReferral.reason || "",
-      diagnosis: newReferral.diagnosis || "",
-      urgency: newReferral.urgency || 'Routine',
-      status: 'Pending',
-      documents: newReferral.documents || [],
-      logs: [
-        { date: new Date().toISOString(), status: "Created", description: "สร้างคำขอส่งตัว", actor: "SCFC Staff" },
-        { date: new Date().toISOString(), status: "Sent", description: "ส่งคำขอไปยังปลายทาง", actor: "System" }
-      ]
-    };
-    setReferrals([created, ...referrals]);
-    toast.success("โรงพยาบาลฝาง ได้ทำการส่งคำขอส่งตัว ผู้ป่วยแล้ว");
-    setView('list');
-  };
-
-  // --- Render Helpers ---
-
-  const renderTodaysArrivals = () => {
+  if (isCreateOpen) {
     return (
-       <div className="mb-6">
-         <div className="flex items-center gap-2 mb-4">
-           <div className="bg-green-100 text-green-700 p-2 rounded-lg">
-             <Ambulance className="w-5 h-5" />
-           </div>
-           <div>
-             <h3 className="text-lg font-bold text-gray-800">ผู้ป่วยรับเข้าวันนี้ (Today's Arrivals)</h3>
-             <p className="text-sm text-gray-500">12 มกราคม 2569</p>
-           </div>
-         </div>
-         
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Mock Patient 1 */}
-            <Card className="border-l-4 border-l-yellow-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                   <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 font-medium">ยังไม่ได้รับการรักษา</Badge>
-                   <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-full">09:30 น.</span>
-                </div>
-                <h4 className="font-bold text-gray-800 text-base mb-0.5">ด.ช. อานนท์ รักดี</h4>
-                <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
-                    <Building className="w-3 h-3" />
-                    <span>(รพ.ต้นทาง) รพ. มหาราชนครราชสีมา</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-700 bg-[#f8f9fa] p-2.5 rounded-md border border-gray-100">
-                   <FileText className="w-3.5 h-3.5 text-yellow-600" />
-                   <span className="line-clamp-1">ปากแหว่งเพดานโหว่ (Cleft Lip)</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Mock Patient 2 */}
-            <Card className="border-l-4 border-l-green-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium">ได้รับการรักษา</Badge>
-                   <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-full">10:45 น.</span>
-                </div>
-                <h4 className="font-bold text-gray-800 text-base mb-0.5">น.ส. มานี ใจผ่อง</h4>
-                <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
-                    <Building className="w-3 h-3" />
-                    <span>(รพ.ต้นทาง) รพ. สตูล</span>
-                </div>
-                 <div className="flex items-center gap-2 text-xs text-gray-700 bg-[#f8f9fa] p-2.5 rounded-md border border-gray-100">
-                   <FileText className="w-3.5 h-3.5 text-green-600" />
-                   <span className="line-clamp-1">ปรึกษาศัลยกรรมตกแต่ง (Plastic Surgery)</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Mock Patient 3 */}
-            <Card className="border border-dashed border-gray-200 shadow-none bg-gray-50/50">
-               <CardContent className="p-4 flex flex-col items-center justify-center h-full text-gray-400 py-6">
-                  <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-2 shadow-sm">
-                     <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-500">ไม่มีรายการเพิ่มเติม</span>
-                  <span className="text-xs text-gray-400">อัปเดตล่าสุด: 11:00 น.</span>
-               </CardContent>
-            </Card>
-         </div>
-       </div>
+      <ReferralAdd
+        onBack={() => setIsCreateOpen(false)}
+        isEditMode={false}
+        initialData={{}}
+        onSubmit={(data) => {
+          const newReferral = {
+            id: `REF-${Date.now()}`,
+            referralNo: `RF-${Date.now()}`,
+            patientName: data.patientName || '',
+            hn: data.patientHn || '',
+            patientHn: data.patientHn || '',
+            referralDate: new Date().toISOString().split('T')[0],
+            type: 'Refer Out' as const,
+            hospital: data.sourceHospital || 'โรงพยาบาลฝาง',
+            sourceHospital: data.sourceHospital || 'โรงพยาบาลฝาง',
+            destinationHospital: data.destinationHospital || '',
+            destination: data.destinationHospital || '',
+            reason: data.reason || '',
+            diagnosis: data.diagnosis || '',
+            urgency: data.urgency || 'Routine',
+            status: 'Pending',
+            creatorRole: 'CM',
+          };
+          setReferrals(prev => [newReferral, ...prev]);
+          setIsCreateOpen(false);
+          toast.success("สร้างคำขอส่งตัวเรียบร้อยแล้ว", {
+            description: `ส่งตัว ${newReferral.patientName} ไปยัง ${newReferral.destinationHospital}`
+          });
+        }}
+      />
     );
-  };
+  }
 
-  const renderListView = () => {
-    const filtered = referrals.filter(r => {
-      const matchSearch = r.patientName.includes(searchTerm) || r.referralNo.includes(searchTerm);
-      const matchStatus = statusFilter === 'all' || r.status === statusFilter;
-      const matchDate = selectedDate ? isSameDay(new Date(r.referralDate), new Date(selectedDate)) : true;
-
-      // Statuses considered as "History"
-      const isHistoryStatus = ['Accepted', 'Rejected', 'Completed', 'Canceled'].includes(r.status);
-
-      if (referralDirection === 'History') {
-          const matchHistoryType = r.type === historyFilter;
-          return matchSearch && matchStatus && isHistoryStatus && matchDate && matchHistoryType;
-      } else {
-          const matchType = r.type === referralDirection;
-          return matchSearch && matchStatus && matchType && !isHistoryStatus && matchDate;
-      }
-    });
-
+  if (selectedReferral) {
     return (
-        <Card className="border-none shadow-[0px_4px_24px_0px_rgba(0,0,0,0.06)] overflow-hidden bg-white">
+      <ReferralSystemDetail 
+        referral={selectedReferral} 
+        onBack={() => setSelectedReferral(null)}
+        onAccept={(date, note) => {
+          setReferrals(prev => prev.map(r => r.id === selectedReferral.id ? { ...r, status: 'Accepted', acceptedDate: date.toISOString() } : r));
+          setSelectedReferral((prev: any) => prev ? { ...prev, status: 'Accepted' } : null);
+          toast.success("ตอบรับการส่งตัวเรียบร้อยแล้ว");
+        }}
+        onCancel={(reason) => {
+          setReferrals(prev => prev.map(r => r.id === selectedReferral.id ? { ...r, status: 'Canceled' } : r));
+          setSelectedReferral((prev: any) => prev ? { ...prev, status: 'Canceled' } : null);
+          toast.success("ยกเลิก/ปฏิเสธการส่งตัวเรียบร้อยแล้ว");
+        }}
+        onDelete={(id) => {
+          setReferrals(prev => prev.filter(r => r.id !== id));
+          setSelectedReferral(null);
+          toast.success("ยกเลิกคำขอส่งตัวเรียบร้อยแล้ว");
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300 pb-20 relative font-['Montserrat','Noto_Sans_Thai',sans-serif]">
+      {/* Header Banner */}
+      <div className="bg-[rgb(255,255,255)] p-4 rounded-[6px] shadow-sm border border-[#DFF6F8]/50 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="text-[#5e5873] font-bold text-lg flex items-center gap-2">
+              <Send className="w-5 h-5" /> ระบบส่งตัว (Referral)
+          </h1>
+        </div>
+      </div>
+
+      {/* Dashboard Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center justify-between">
+              <div>
+                  <p className="text-blue-600 font-bold text-2xl">{referrals.filter(r => r.status === 'Pending' || r.status === 'pending').length}</p>
+                  <p className="text-blue-600/80 text-sm">รอตอบรับ</p>
+              </div>
+              <div className="bg-blue-100 p-2 rounded-full">
+                  <Clock className="w-5 h-5 text-blue-600" />
+              </div>
+          </div>
+          <div className="bg-orange-50 border border-orange-100 rounded-lg p-4 flex items-center justify-between">
+              <div>
+                  <p className="text-orange-600 font-bold text-2xl">{referrals.filter(r => r.status === 'Accepted' || r.status === 'accepted' || r.status === 'WaitingReceive').length}</p>
+                  <p className="text-orange-600/80 text-sm">รอรับตัว</p>
+              </div>
+              <div className="bg-orange-100 p-2 rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-orange-600" />
+              </div>
+          </div>
+          <div className="bg-cyan-50 border border-cyan-100 rounded-lg p-4 flex items-center justify-between">
+              <div>
+                  <p className="text-cyan-600 font-bold text-2xl">{referrals.filter(r => r.type === 'Refer In').length}</p>
+                  <p className="text-cyan-600/80 text-sm">รับตัวเข้า</p>
+              </div>
+              <div className="bg-cyan-100 p-2 rounded-full">
+                  <ArrowDownToLine className="w-5 h-5 text-cyan-600" />
+              </div>
+          </div>
+          <div className="bg-purple-50 border border-purple-100 rounded-lg p-4 flex items-center justify-between">
+              <div>
+                  <p className="text-purple-600 font-bold text-2xl">{referrals.filter(r => r.type === 'Refer Out').length}</p>
+                  <p className="text-purple-600/80 text-sm">ส่งตัวออก</p>
+              </div>
+              <div className="bg-purple-100 p-2 rounded-full">
+                  <ArrowUpFromLine className="w-5 h-5 text-purple-600" />
+              </div>
+          </div>
+          <div className="bg-green-50 border border-green-100 rounded-lg p-4 flex items-center justify-between">
+              <div>
+                  <p className="text-green-600 font-bold text-2xl">{referrals.filter(r => ['Completed', 'completed', 'Treated', 'treated'].includes(r.status)).length}</p>
+                  <p className="text-green-600/80 text-sm">เสร็จสิ้น</p>
+              </div>
+              <div className="bg-green-100 p-2 rounded-full">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+              </div>
+          </div>
+      </div>
+
+      {/* Main Content */}
+      <Card className="border-none shadow-[0px_4px_24px_0px_rgba(0,0,0,0.06)] overflow-hidden bg-white">
           <div className="p-6 border-b border-[#EBE9F1] flex flex-col md:flex-row gap-4 items-center justify-between">
              <h2 className="text-[18px] font-bold text-[#5e5873] flex items-center gap-2">
                  <Send className="w-5 h-5 text-[#7367f0]" /> รายการส่งตัว/รับตัว
@@ -374,7 +314,7 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
              <div className="flex items-center gap-3">
                  <div className="relative w-full max-w-[300px]">
                     <Input 
-                      placeholder="ค้นหาชื่อผู้ป่วย, เลขที่ส่งตัว..." 
+                      placeholder="ค้นหาชื่อผู้ป่วย, เลขที่, HN..." 
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
                       className="pr-10 h-[40px] border-[#EBE9F1] bg-white focus:ring-[#7367f0]"
@@ -384,45 +324,7 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
                     </div>
                  </div>
 
-                 <Popover>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant={"outline"}
-                            className={cn(
-                                "w-[180px] bg-white border-gray-200 h-[40px] text-sm justify-start text-left font-normal shadow-sm",
-                                !selectedDate && "text-muted-foreground"
-                            )}
-                        >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? (
-                                (() => {
-                                    const date = new Date(selectedDate);
-                                    const year = date.getFullYear() + 543;
-                                    return `${format(date, "d MMM", { locale: th })} ${year}`;
-                                })()
-                            ) : (
-                                <span>ทั้งหมด</span>
-                            )}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className={cn("w-auto p-0")} align="start" side="left">
-                        <Calendar
-                            mode="single"
-                            selected={selectedDate ? new Date(selectedDate) : undefined}
-                            onSelect={(date) => setSelectedDate(date ? format(date, "yyyy-MM-dd") : "")}
-                            locale={th}
-                            formatters={{
-                                formatCaption: (date) => {
-                                    const year = date.getFullYear() + 543;
-                                    return `${format(date, "MMMM", { locale: th })} ${year}`;
-                                }
-                            }}
-                            classNames={{
-                                day_selected: "bg-[#7367f0] text-white hover:bg-[#7367f0] hover:text-white focus:bg-[#7367f0] focus:text-white rounded-md",
-                            }}
-                        />
-                    </PopoverContent>
-                </Popover>
+                 <ViewModeToggle viewMode={viewMode} onChange={setViewMode} />
 
                  <Button 
                    onClick={handleCreateClick} 
@@ -434,29 +336,126 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
              </div>
           </div>
 
+          {viewMode === 'calendar' ? (
+            <div className="p-6 space-y-6">
+              <WebCalendarView
+                items={referrals}
+                dateField="date"
+                themeColor="#ff6d00"
+                countLabel="รายการ"
+                selectedDate={calendarDate}
+                onDateSelect={setCalendarDate}
+                subTabs={[
+                  { value: 'Refer In', label: 'รายการรับตัว' },
+                  { value: 'Refer Out', label: 'รายการส่งตัว' },
+                ]}
+                activeSubTab={calendarSubTab}
+                onSubTabChange={setCalendarSubTab}
+                itemFilter={(item) => {
+                  if (item.type !== calendarSubTab) return false;
+                  return !!item.date;
+                }}
+              />
+              <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-gray-50/50">
+                    <TableRow>
+                      <TableHead className="w-[60px]"></TableHead>
+                      <TableHead>ผู้ป่วย</TableHead>
+                      <TableHead>เส้นทาง</TableHead>
+                      <TableHead>วันที่</TableHead>
+                      <TableHead>สถานะ</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(() => {
+                      const calItems = referrals.filter(r => {
+                        if (r.type !== calendarSubTab) return false;
+                        if (!r.date) return false;
+                        if (calendarDate && r.date !== calendarDate) return false;
+                        if (searchTerm) {
+                          const q = searchTerm.toLowerCase();
+                          if (!(r.patientName || '').toLowerCase().includes(q) && !(r.hn || '').toLowerCase().includes(q)) return false;
+                        }
+                        return true;
+                      });
+                      if (calItems.length === 0) {
+                        return (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-gray-400 py-12">
+                              <div className="flex flex-col items-center gap-3">
+                                <Send className="w-10 h-10 opacity-20" />
+                                <p className="text-sm">{calendarDate ? 'ไม่พบรายการในวันที่เลือก' : 'เลือกวันที่เพื่อดูรายการ'}</p>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+                      return calItems.map(referral => (
+                        <TableRow key={referral.id} className="cursor-pointer hover:bg-slate-50 group" onClick={() => setSelectedReferral(referral)}>
+                          <TableCell>
+                            <div className={cn("p-2 rounded-lg w-fit",
+                              referral.status === 'Pending' || referral.status === 'pending' ? "bg-blue-100 text-blue-600" :
+                              referral.status === 'Accepted' || referral.status === 'accepted' ? "bg-orange-100 text-orange-600" :
+                              ['Completed','completed','Treated','treated'].includes(referral.status) ? "bg-green-100 text-green-600" :
+                              "bg-gray-100 text-gray-600"
+                            )}>
+                              {referral.type === 'Refer Out' ? <Send className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-bold text-[#5e5873] group-hover:text-[#7367f0] transition-colors">{referral.patientName}</div>
+                              <Badge variant="outline" className="text-gray-500 text-[10px] h-5">{referral.hn || referral.patientHn}</Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                              <span className="text-xs">{(referral.hospital || '').replace('โรงพยาบาล', 'รพ.')}</span>
+                              <span className="text-gray-400">→</span>
+                              <span className="text-xs text-[#7367f0] font-medium">{(referral.destinationHospital || '').replace('โรงพยาบาล', 'รพ.')}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs text-gray-500">
+                              {referral.date && referral.date.match(/^\d{4}-\d{2}-\d{2}$/) ? formatThaiDateWithDay(new Date(referral.date)) : referral.date || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {renderStatusBadge(referral.status)}
+                          </TableCell>
+                        </TableRow>
+                      ));
+                    })()}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : (
           <div className="p-6">
+             {/* Tabs / Filters */}
              <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50/50 rounded-lg border border-dashed border-gray-200 items-center">
                  <div className="bg-white p-1 rounded-md border border-gray-200 flex items-center shadow-sm">
                    <button
                      className={cn(
                        "relative px-4 py-1.5 text-sm font-medium rounded transition-all",
-                       referralDirection === 'Refer In' ? "bg-[#7367f0] text-white shadow-sm" : "text-gray-500 hover:bg-gray-50"
+                       referralType === 'Refer In' ? "bg-[#7367f0] text-white shadow-sm" : "text-gray-500 hover:bg-gray-50"
                      )}
-                     onClick={() => setReferralDirection('Refer In')}
+                     onClick={() => setReferralType('Refer In')}
                    >
                      รายการรับตัว
-                     {referrals.filter(r => r.type === 'Refer In' && r.status === 'Pending').length > 0 && (
+                     {referrals.filter(r => r.type === 'Refer In' && (r.status === 'Pending' || r.status === 'pending')).length > 0 && (
                        <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white ring-2 ring-white">
-                         {referrals.filter(r => r.type === 'Refer In' && r.status === 'Pending').length}
+                         {referrals.filter(r => r.type === 'Refer In' && (r.status === 'Pending' || r.status === 'pending')).length}
                        </span>
                      )}
                    </button>
                    <button
                      className={cn(
                        "px-4 py-1.5 text-sm font-medium rounded transition-all",
-                       referralDirection === 'Refer Out' ? "bg-[#7367f0] text-white shadow-sm" : "text-gray-500 hover:bg-gray-50"
+                       referralType === 'Refer Out' ? "bg-[#7367f0] text-white shadow-sm" : "text-gray-500 hover:bg-gray-50"
                      )}
-                     onClick={() => setReferralDirection('Refer Out')}
+                     onClick={() => setReferralType('Refer Out')}
                    >
                      รายการส่งตัว
                    </button>
@@ -464,9 +463,9 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
                     <button
                       className={cn(
                         "px-4 py-1.5 text-sm font-medium rounded transition-all",
-                        referralDirection === 'History' ? "bg-[#7367f0] text-white shadow-sm" : "text-gray-500 hover:bg-gray-50"
+                        referralType === 'History' ? "bg-[#7367f0] text-white shadow-sm" : "text-gray-500 hover:bg-gray-50"
                       )}
-                      onClick={() => setReferralDirection('History')}
+                      onClick={() => setReferralType('History')}
                     >
                       ประวัติย้อนหลัง
                     </button>
@@ -475,38 +474,102 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
 
                  <div className="h-8 w-px bg-gray-300 hidden md:block"></div>
 
-                 <div className="flex items-center gap-3 w-full md:w-auto md:ml-auto">
-                    {referralDirection === 'History' && (
-                        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-200">
-                             <Select value={historyFilter} onValueChange={(val: any) => setHistoryFilter(val)}>
-                                <SelectTrigger className="w-[120px] bg-white border-gray-200 rounded-[6px] h-[38px] text-[#7367f0] font-medium">
+                 <div className="flex items-center gap-3 flex-wrap w-full md:w-auto md:ml-auto">
+                    {referralType === 'History' && (
+                        <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-2 duration-200">
+                            <span className="text-sm text-gray-500 font-medium whitespace-nowrap">ประเภท:</span>
+                             <Select value={historyType} onValueChange={(val: any) => setHistoryType(val)}>
+                                <SelectTrigger className="w-[120px] bg-white border-gray-200 rounded-[6px] h-[38px] text-sm text-[#7367f0] font-medium">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="All">ทั้งหมด</SelectItem>
                                     <SelectItem value="Refer In">รับตัว</SelectItem>
                                     <SelectItem value="Refer Out">ส่งตัว</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div className="h-4 w-px bg-gray-300 mx-1"></div>
                         </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-gray-500 shrink-0">
-                        <Filter className="w-4 h-4" />
-                        <span className="text-sm font-medium">สถานะ:</span>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-gray-500 font-medium whitespace-nowrap">ต้นทาง:</span>
+                        <Select value={filterSourceHospital} onValueChange={setFilterSourceHospital}>
+                            <SelectTrigger className="w-[180px] bg-white border-gray-200 rounded-[6px] h-[38px] text-sm">
+                                <SelectValue placeholder="ต้นทาง" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">ทั้งหมด</SelectItem>
+                                {uniqueSourceHospitals.map(hospital => (
+                                    <SelectItem key={hospital} value={hospital}>{hospital}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[180px] bg-white border-gray-200 rounded-[6px] h-[38px]">
-                            <SelectValue placeholder="สถานะ" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">ทั้งหมด</SelectItem>
-                            <SelectItem value="Pending">รอตอบรับ</SelectItem>
-                            <SelectItem value="Accepted">ตอบรับแล้ว</SelectItem>
-                            <SelectItem value="Rejected">ถูกปฎิเสธ</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-gray-500 font-medium whitespace-nowrap">ปลายทาง:</span>
+                        <Select value={filterDestHospital} onValueChange={setFilterDestHospital}>
+                            <SelectTrigger className="w-[180px] bg-white border-gray-200 rounded-[6px] h-[38px] text-sm">
+                                <SelectValue placeholder="ปลายทาง" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">ทั้งหมด</SelectItem>
+                                {uniqueDestHospitals.map(hospital => (
+                                    <SelectItem key={hospital} value={hospital}>{hospital}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-gray-500 font-medium whitespace-nowrap">สถานะ:</span>
+                        <Select value={filterStatus} onValueChange={setFilterStatus}>
+                            <SelectTrigger className="w-[160px] bg-white border-gray-200 rounded-[6px] h-[38px] text-sm">
+                                <SelectValue placeholder="สถานะ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">ทั้งหมด</SelectItem>
+                                <SelectItem value="Pending">รอตอบรับ</SelectItem>
+                                <SelectItem value="Accepted">ตอบรับแล้ว</SelectItem>
+                                <SelectItem value="Rejected">ปฏิเสธ</SelectItem>
+                                <SelectItem value="Examined">ตรวจแล้ว</SelectItem>
+                                <SelectItem value="Treated">รักษาแล้ว</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-gray-500 font-medium whitespace-nowrap">วันที่สร้างคำขอ:</span>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-[180px] bg-white border-gray-200 rounded-[6px] h-[38px] text-sm justify-start text-left font-normal">
+                                    <CalendarIcon className="mr-2 h-4 w-4 text-gray-400" />
+                                    {selectedDate ? (() => {
+                                        const date = new Date(selectedDate);
+                                        return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+                                    })() : "ทั้งหมด"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="end">
+                                <Calendar
+                                    mode="single"
+                                    selected={selectedDate ? new Date(selectedDate) : undefined}
+                                    onSelect={(date) => setSelectedDate(date ? toISODateString(date) : "")}
+                                    locale={th}
+                                    formatters={{
+                                        formatCaption: (date) => {
+                                            const year = date.getFullYear() + 543;
+                                            return `${THAI_MONTHS_FULL[date.getMonth()]} ${year}`;
+                                        }
+                                    }}
+                                    classNames={{
+                                        day_selected: "bg-[#7367f0] text-white hover:bg-[#7367f0] hover:text-white focus:bg-[#7367f0] focus:text-white rounded-md",
+                                    }}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
                  </div>
              </div>
 
@@ -517,7 +580,7 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
                       <TableHead className="w-[60px]"></TableHead>
                       <TableHead>ผู้ป่วย</TableHead>
                       <TableHead>เส้นทาง</TableHead>
-                      <TableHead>วันที่</TableHead>
+                      <TableHead>วันที่ขอ</TableHead>
                       <TableHead>ความเร่งด่วน</TableHead>
                       <TableHead>สถานะ</TableHead>
                       <TableHead className="text-right">จัดการ</TableHead>
@@ -529,23 +592,115 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
                         <TableCell colSpan={7} className="text-center text-gray-400 py-12">
                             <div className="flex flex-col items-center gap-3">
                                 <FileText className="w-10 h-10 opacity-20" />
-                                <p className="text-sm">{referralDirection === 'History' ? "ไม่พบประวัติการส่งตัว" : "ไม่พบข้อมูลการส่งตัว"}</p>
+                                <p className="text-sm">ไม่พบข้อมูลการส่งตัว</p>
                             </div>
                         </TableCell>
                       </TableRow>
+                    ) : referralType === 'History' ? (
+                      // Group by date for history (matched with HomeVisit pattern)
+                      (() => {
+                        const groups: { date: string; label: string; items: typeof filtered }[] = [];
+                        const map = new Map<string, typeof filtered>();
+                        filtered.forEach(item => {
+                          const dateKey = item.referralDate ? item.referralDate.split('T')[0] : item.date || 'unknown';
+                          if (!map.has(dateKey)) map.set(dateKey, []);
+                          map.get(dateKey)!.push(item);
+                        });
+                        const sortedKeys = Array.from(map.keys()).sort((a, b) => b.localeCompare(a));
+                        sortedKeys.forEach(dateKey => {
+                          let label = dateKey;
+                          if (dateKey.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            const d = new Date(dateKey + 'T00:00:00');
+                            label = formatThaiDateWithDay(d);
+                          }
+                          groups.push({ date: dateKey, label, items: map.get(dateKey)! });
+                        });
+                        return groups.flatMap(group => [
+                            /* Date Divider Row */
+                            <TableRow key={`divider-${group.date}`} className="bg-gray-50/80 hover:bg-gray-50/80">
+                               <TableCell colSpan={7} className="py-2">
+                                 <div className="flex items-center gap-3">
+                                   <div className="h-px flex-1 bg-gray-200" />
+                                   <span className="text-sm text-[#b4b7bd] whitespace-nowrap">{group.label}</span>
+                                   <div className="h-px flex-1 bg-gray-200" />
+                                 </div>
+                               </TableCell>
+                            </TableRow>,
+                            /* Data Rows */
+                            ...group.items.map((referral) => (
+                               <TableRow 
+                                   key={referral.id} 
+                                   className="cursor-pointer hover:bg-slate-50 group" 
+                                   onClick={() => setSelectedReferral(referral)}
+                               >
+                                 <TableCell>
+                                    <div className={cn("p-2 rounded-lg w-fit", 
+                                       referral.status === 'Pending' || referral.status === 'pending' ? "bg-blue-100 text-blue-600" :
+                                       referral.status === 'Accepted' || referral.status === 'accepted' ? "bg-orange-100 text-orange-600" :
+                                       referral.status === 'Rejected' || referral.status === 'rejected' ? "bg-red-100 text-red-600" :
+                                       referral.status === 'Completed' || referral.status === 'completed' ? "bg-green-100 text-green-600" :
+                                       "bg-gray-100 text-gray-600"
+                                    )}>
+                                       {referral.type === 'Refer Out' ? <Send className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+                                    </div>
+                                 </TableCell>
+                                 <TableCell>
+                                   <div>
+                                       <div className="font-bold text-[#5e5873] group-hover:text-[#7367f0] transition-colors">{referral.patientName}</div>
+                                       <Badge variant="outline" className="text-gray-500 text-[10px] h-5 border-gray-200 bg-gray-50">{referral.hn || referral.patientHn}</Badge>
+                                   </div>
+                                 </TableCell>
+                                 <TableCell>
+                                   <div className="flex flex-col gap-1">
+                                     <div className="flex items-center gap-2 text-[#5e5873] text-sm">
+                                        <Building size={14} className="text-[#b9b9c3]" />
+                                        <span className="text-xs">{referral.hospital?.replace('โรงพยาบาล', 'รพ.') || referral.sourceHospital || '-'}</span>
+                                     </div>
+                                     <div className="pl-1">
+                                       <ArrowDown size={12} className="text-gray-400" />
+                                     </div>
+                                     <div className="flex items-center gap-2 text-[#7367f0] font-medium text-sm">
+                                        <Building size={14} />
+                                        <span>{referral.destinationHospital?.replace('โรงพยาบาล', 'รพ.') || referral.destination || '-'}</span>
+                                     </div>
+                                   </div>
+                                 </TableCell>
+                                 <TableCell>
+                                    <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                        <CalendarIcon className="w-3 h-3" /> {referral.referralDate ? formatThaiDateWithDay(new Date(referral.referralDate)) : '-'}
+                                    </div>
+                                 </TableCell>
+                                 <TableCell>
+                                   <div className={cn("text-xs font-medium uppercase tracking-wide", 
+                                       referral.urgency === 'Emergency' ? "text-red-600" : 
+                                       referral.urgency === 'Urgent' ? "text-orange-500" : "text-gray-600"
+                                   )}>
+                                     {referral.urgency || 'Routine'}
+                                   </div>
+                                 </TableCell>
+                                 <TableCell>
+                                    {renderStatusBadge(referral.status)}
+                                 </TableCell>
+                                 <TableCell className="text-right">
+                                     {/* View only in history */}
+                                 </TableCell>
+                               </TableRow>
+                            ))
+                         ]);
+                       })()
                     ) : (
                       filtered.map((referral) => (
                         <TableRow 
                             key={referral.id} 
                             className="cursor-pointer hover:bg-slate-50 group" 
-                            onClick={() => handleViewDetail(referral)}
+                            onClick={() => setSelectedReferral(referral)}
                         >
                           <TableCell>
                              <div className={cn("p-2 rounded-lg w-fit", 
-                                referral.status === 'Pending' ? "bg-yellow-100 text-yellow-600" :
-                                referral.status === 'Accepted' ? "bg-green-100 text-green-600" :
-                                referral.status === 'Rejected' ? "bg-red-100 text-red-600" :
-                                referral.status === 'Completed' ? "bg-blue-100 text-blue-600" :
+                                referral.status === 'Pending' || referral.status === 'pending' ? "bg-blue-100 text-blue-600" :
+                                referral.status === 'Accepted' || referral.status === 'accepted' ? "bg-orange-100 text-orange-600" :
+                                referral.status === 'Rejected' || referral.status === 'rejected' ? "bg-red-100 text-red-600" :
+                                referral.status === 'Completed' || referral.status === 'completed' ? "bg-green-100 text-green-600" :
                                 "bg-gray-100 text-gray-600"
                              )}>
                                 {referral.type === 'Refer Out' ? <Send className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
@@ -554,27 +709,27 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
                           <TableCell>
                             <div>
                                 <div className="font-bold text-[#5e5873] group-hover:text-[#7367f0] transition-colors">{referral.patientName}</div>
-                                <Badge variant="outline" className="text-gray-500 text-[10px] h-5 border-gray-200 bg-gray-50">{referral.referralNo}</Badge>
+                                <Badge variant="outline" className="text-gray-500 text-[10px] h-5 border-gray-200 bg-gray-50">{referral.hn || referral.patientHn}</Badge>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col gap-1">
                               <div className="flex items-center gap-2 text-[#5e5873] text-sm">
                                  <Building size={14} className="text-[#b9b9c3]" />
-                                 <span className="text-xs">{referral.sourceHospital}</span>
+                                 <span className="text-xs">{referral.hospital?.replace('โรงพยาบาล', 'รพ.') || referral.sourceHospital || '-'}</span>
                               </div>
                               <div className="pl-1">
                                 <ArrowDown size={12} className="text-gray-400" />
                               </div>
                               <div className="flex items-center gap-2 text-[#7367f0] font-medium text-sm">
                                  <Building size={14} />
-                                 <span>{referral.destinationHospital}</span>
+                                 <span>{referral.destinationHospital?.replace('โรงพยาบาล', 'รพ.') || referral.destination || '-'}</span>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                              <div className="flex items-center gap-1 text-gray-400 text-xs">
-                                 <CalendarIcon className="w-3 h-3" /> {format(new Date(referral.referralDate), "d MMM yy", { locale: th })}
+                                 <CalendarIcon className="w-3 h-3" /> {referral.referralDate ? formatThaiDateWithDay(new Date(referral.referralDate)) : '-'}
                              </div>
                           </TableCell>
                           <TableCell>
@@ -582,44 +737,38 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
                                 referral.urgency === 'Emergency' ? "text-red-600" : 
                                 referral.urgency === 'Urgent' ? "text-orange-500" : "text-gray-600"
                             )}>
-                              {referral.urgency}
+                              {referral.urgency || 'Routine'}
                             </div>
                           </TableCell>
                           <TableCell>
-                             {referral.status === 'Pending' && <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200 font-normal">รอการตอบรับ</Badge>}
-                             {referral.status === 'Accepted' && <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 font-normal">ตอบรับแล้ว</Badge>}
-                             {referral.status === 'Rejected' && <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200 font-normal">ถูกปฏิเสธ</Badge>}
-                             {referral.status === 'Completed' && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200 font-normal">เสร็จสิ้น</Badge>}
-                             {referral.status === 'Canceled' && <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200 font-normal">ยกเลิก</Badge>}
+                             {renderStatusBadge(referral.status)}
                           </TableCell>
                           <TableCell className="text-right">
-                             <div className="flex items-center justify-end gap-1">
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 text-gray-400 hover:text-[#7367f0]" 
-                                    title="แก้ไขข้อมูล"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditClick(referral);
-                                    }}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 text-gray-400 hover:text-red-500" 
-                                    onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        setTargetReferral(referral);
-                                        setIsDeleteOpen(true);
-                                    }} 
-                                    title="ลบ"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                             </div>
+                              <div className="flex items-center justify-end gap-1">
+                                  <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 text-gray-400 hover:text-[#7367f0]"
+                                      onClick={(e) => {
+                                          e.stopPropagation();
+                                          // Edit logic
+                                          toast.info("Edit feature");
+                                      }}
+                                  >
+                                      <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button 
+                                       variant="ghost" 
+                                       size="icon" 
+                                       className="h-8 w-8 text-gray-400 hover:text-red-500" 
+                                       onClick={(e) => {
+                                           e.stopPropagation(); 
+                                           handleDelete(referral.id);
+                                       }}
+                                  >
+                                      <Trash2 className="w-4 h-4" />
+                                  </Button>
+                              </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -628,114 +777,8 @@ export default function ReferralSystem({ onBack, initialHN }: ReferralSystemProp
                 </Table>
              </div>
           </div>
+          )}
         </Card>
-    );
-  };
-
-
-
-  return (
-    <div className="w-full pb-20">
-      {view === 'list' && (
-      <div className="space-y-6 mb-6">
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-3">
-          <Ambulance className="w-6 h-6 text-[#7367f0]" />
-          <h1 className="text-xl font-bold text-[#5e5873]">ระบบส่งตัวผู้ป่วย (Referral System)</h1>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center justify-between">
-              <div>
-                  <p className="text-blue-600 font-bold text-2xl">0</p>
-                  <p className="text-blue-600/80 text-sm">เคสรับตัววันนี้</p>
-              </div>
-              <div className="bg-blue-100 p-2 rounded-full">
-                  <Ambulance className="w-5 h-5 text-blue-600" />
-              </div>
-          </div>
-
-          <div className="bg-orange-50 border border-orange-100 rounded-lg p-4 flex items-center justify-between">
-              <div>
-                  <p className="text-orange-600 font-bold text-2xl">2</p>
-                  <p className="text-orange-600/80 text-sm">รอการตอบรับ</p>
-              </div>
-              <div className="bg-orange-100 p-2 rounded-full">
-                  <Clock className="w-5 h-5 text-orange-600" />
-              </div>
-          </div>
-
-          <div className="bg-green-50 border border-green-100 rounded-lg p-4 flex items-center justify-between">
-              <div>
-                  <p className="text-green-600 font-bold text-2xl">2</p>
-                  <p className="text-green-600/80 text-sm">ดำเนินการเสร็จสิ้น</p>
-              </div>
-              <div className="bg-green-100 p-2 rounded-full">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-              </div>
-          </div>
-
-          <div className="bg-red-50 border border-red-100 rounded-lg p-4 flex items-center justify-between">
-              <div>
-                  <p className="text-red-600 font-bold text-2xl">1</p>
-                  <p className="text-red-600/80 text-sm">ถูกปฏิเสธ</p>
-              </div>
-              <div className="bg-red-100 p-2 rounded-full">
-                  <XCircle className="w-5 h-5 text-red-600" />
-              </div>
-          </div>
-        </div>
-      </div>
-      )}
-      
-      {view === 'list' && renderTodaysArrivals()}
-      {view === 'list' && renderListView()}
-      {view === 'create' && (
-        <ReferralAdd 
-          onBack={() => setView('list')}
-          isEditMode={isEditMode}
-          initialData={newReferral}
-          onSubmit={(data) => {
-             // Merge data back to newReferral state before submitting
-             setNewReferral({...newReferral, ...data});
-             // We need to delay submit slightly or just call handleSubmitCreate directly if data is passed fully
-             // But handleSubmitCreate uses newReferral state. 
-             // Ideally refactor handleSubmitCreate to accept data, but for now:
-             setTimeout(handleSubmitCreate, 0); 
-          }}
-        />
-      )}
-      
-      {view === 'detail' && selectedReferral && (
-        <ReferralSystemDetail 
-            referral={selectedReferral} 
-            onBack={() => setView('list')}
-            onAccept={handleDetailAccept}
-            onCancel={handleDetailCancel}
-        />
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-         <DialogContent className="max-w-[400px]">
-             <DialogHeader>
-                 <DialogTitle className="text-red-600 flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5" /> ยืนยันการลบ
-                 </DialogTitle>
-                 <DialogDescription className="sr-only">
-                    ยืนยันการลบรายการส่งตัว
-                 </DialogDescription>
-             </DialogHeader>
-             <div className="py-4 text-center">
-                <p className="text-gray-600">คุณต้องการลบคำขอส่งตัวของ</p>
-                <p className="text-lg font-bold text-[#5e5873] my-2">{targetReferral?.patientName}</p>
-                <p className="text-sm text-gray-400">การกระทำนี้ไม่สามารถเรียกคืนได้</p>
-             </div>
-             <DialogFooter className="flex gap-2 justify-center sm:justify-center">
-                 <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>ยกเลิก</Button>
-                 <Button variant="destructive" onClick={handleConfirmDelete}>ยืนยันลบ</Button>
-             </DialogFooter>
-         </DialogContent>
-      </Dialog>
     </div>
   );
 }

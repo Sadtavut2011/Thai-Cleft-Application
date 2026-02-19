@@ -1,195 +1,367 @@
-import React from "react";
-import { 
-  Briefcase, 
-  Video, 
-  Users,
-  Activity,
-  ArrowRight,
-  ShieldCheck,
-  TrendingUp,
-  AlertCircle
+import React, { useMemo, useState } from "react";
+import {
+  Video, Users, Activity,
+  Calendar, Home, Send, Coins, BarChart3,
+  AlertCircle,
+  Building2, MapPin, Filter
 } from "lucide-react";
 import { cn } from "../../../../components/ui/utils";
-import { DashboardFilters } from "../components/scfc/DashboardFilters";
-import { ApprovalInbox } from "../components/scfc/ApprovalInbox";
-import { HomeVisitMonitoring } from "../components/scfc/HomeVisitMap";
-import { ReferralPipeline } from "../components/scfc/ReferralPipeline";
-import { AppointmentMonitoring } from "../components/scfc/AppointmentMonitoring";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { useSystem } from "../../../../context/SystemContext";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select";
+import { Button } from "../../../../components/ui/button";
+import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid } from 'recharts';
+import { PATIENTS_DATA, HOME_VISIT_DATA, REFERRAL_DATA, CASE_MANAGER_DATA } from "../../../../data/patientData";
+import { PURPLE, PROVINCES, HOSPITALS } from "../../../../data/themeConfig";
 
-const fundDistributionData = [
-  { name: 'การศึกษา', value: 45000, color: '#0d9488' },
-  { name: 'รักษาพยาบาล', value: 85000, color: '#0891b2' },
-  { name: 'การเดินทาง', value: 12000, color: '#0f766e' },
-  { name: 'ค่าครองชีพ', value: 25000, color: '#115e59' },
+const MONTHS = [
+  { value: "1", label: "มกราคม" },
+  { value: "2", label: "กุมภาพันธ์" },
+  { value: "3", label: "มีนาคม" },
+  { value: "4", label: "เมษายน" },
+  { value: "5", label: "พฤษภาคม" },
+  { value: "6", label: "มิถุนายน" },
+  { value: "7", label: "กรกฎาคม" },
+  { value: "8", label: "สิงหาคม" },
+  { value: "9", label: "กันยายน" },
+  { value: "10", label: "ตุลาคม" },
+  { value: "11", label: "พฤศจิกายน" },
+  { value: "12", label: "ธันวาคม" },
 ];
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ReactNode;
-  trend?: string;
-  trendUp?: boolean;
-  variant: 'teal' | 'cyan' | 'slate' | 'rose';
-}
-
-function StatCard({ title, value, subtitle, icon, trend, trendUp, variant }: StatCardProps) {
-  const variants = {
-    teal: "bg-teal-50 border-teal-100 text-teal-600",
-    cyan: "bg-cyan-50 border-cyan-100 text-cyan-600",
-    slate: "bg-slate-50 border-slate-100 text-slate-600",
-    rose: "bg-rose-50 border-rose-100 text-rose-600",
-  };
-
-  return (
-    <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between transition-all hover:shadow-md hover:border-teal-200 group">
-      <div className="flex justify-between items-start mb-4">
-        <div className={cn("p-2.5 rounded-lg border", variants[variant])}>
-          {icon}
-        </div>
-        {trend && (
-          <div className={cn(
-            "flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider",
-            trendUp ? "text-emerald-600 bg-emerald-50" : "text-rose-600 bg-rose-50"
-          )}>
-            {trendUp ? <TrendingUp size={10} className="mr-1" /> : null}
-            {trend}
-          </div>
-        )}
-      </div>
-      <div>
-        <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{title}</h3>
-        <div className="text-2xl font-black text-slate-800 tracking-tight">{value}</div>
-        {subtitle && (
-          <div className="flex items-center gap-1 mt-2">
-            <div className="h-1 w-1 rounded-full bg-slate-300"></div>
-            <p className="text-[10px] text-slate-400 font-medium">{subtitle}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+const YEARS = ["2024", "2025", "2026"];
 
 export function OperationsDashboard() {
-  const { stats } = useSystem();
+  const [provinceFilter, setProvinceFilter] = useState('ทั้งหมด');
+  const [hospitalFilter, setHospitalFilter] = useState('ทั้งหมด');
+  const [selectedMonth, setSelectedMonth] = useState("2");
+  const [selectedYear, setSelectedYear] = useState("2025");
+
+  // Filter patients by province/hospital
+  const filteredPatients = useMemo(() => {
+    return PATIENTS_DATA.filter(p => {
+      const matchProv = provinceFilter === 'ทั้งหมด' || (p.province || '').includes(provinceFilter);
+      const matchHosp = hospitalFilter === 'ทั้งหมด' || (p.hospital || '').includes(hospitalFilter);
+      return matchProv && matchHosp;
+    });
+  }, [provinceFilter, hospitalFilter]);
+
+  // Aggregate stats from filtered data
+  const stats = useMemo(() => {
+    const totalPatients = filteredPatients.length;
+    const filteredHNs = new Set(filteredPatients.map(p => p.hn));
+
+    const totalVisits = (HOME_VISIT_DATA || []).filter((v: any) => !filteredHNs.size || filteredHNs.has(v.hn)).length;
+    const totalReferrals = (REFERRAL_DATA || []).filter((r: any) => !filteredHNs.size || filteredHNs.has(r.hn)).length;
+    const totalCM = CASE_MANAGER_DATA?.length || 0;
+
+    let totalAppointments = 0;
+    let pendingAppts = 0;
+    filteredPatients.forEach(p => {
+      const appts = p.appointmentHistory || [];
+      totalAppointments += appts.length;
+      pendingAppts += appts.filter((a: any) => a.status === 'waiting' || a.status === 'pending').length;
+    });
+
+    let totalFunds = 0;
+    let pendingFunds = 0;
+    filteredPatients.forEach(p => {
+      const funds = p.funding || [];
+      totalFunds += funds.length;
+      pendingFunds += funds.filter((f: any) => f.status === 'Pending').length;
+    });
+
+    let totalTele = 0;
+    filteredPatients.forEach(p => {
+      totalTele += (p.teleConsultHistory || []).length;
+    });
+
+    return {
+      totalPatients, totalVisits, totalReferrals, totalCM,
+      totalAppointments, pendingAppts, totalFunds, pendingFunds, totalTele
+    };
+  }, [filteredPatients]);
+
+  // System overview chart
+  const systemData = [
+    { name: 'เยี่ยมบ้าน', value: stats.totalVisits, color: '#28c76f' },
+    { name: 'นัดหมาย', value: stats.totalAppointments, color: '#4285f4' },
+    { name: 'ส่งตัว', value: stats.totalReferrals, color: '#ff6d00' },
+    { name: 'Tele-med', value: stats.totalTele, color: '#e91e63' },
+    { name: 'ขอทุน', value: stats.totalFunds, color: '#f5a623' },
+  ].filter(d => d.value > 0);
+
+  // Province distribution
+  const provinceData = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredPatients.forEach(p => {
+      const prov = p.province || 'ไม่ระบุ';
+      map.set(prov, (map.get(prov) || 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+  }, [filteredPatients]);
+
+  // Hospital distribution
+  const hospitalData = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredPatients.forEach(p => {
+      const h = (p.hospital || 'ไม่ระบุ').replace('โรงพยาบาล', 'รพ.').trim();
+      map.set(h, (map.get(h) || 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name: name.length > 12 ? name.slice(0, 12) + '..' : name, fullName: name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+  }, [filteredPatients]);
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      
-      {/* Dashboard Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300 font-['IBM_Plex_Sans_Thai']">
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-             <div className="bg-teal-600 text-white p-1 rounded">
-               <ShieldCheck size={16} />
-             </div>
-             <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.2em]">SCFC Overseer Mode</span>
-          </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">System Monitoring <span className="text-teal-600">&</span> Audit</h1>
-          <p className="text-slate-500 text-sm font-medium">ภาพรวมการบริหารจัดการเครือข่าย ThaiCleftLink ภาคเหนือ</p>
+          <h1 className="text-[#5e5873] text-xl">แดชบอร์ดภาพรวม</h1>
+          <p className="text-sm text-gray-400 mt-0.5">ศูนย์กลางบริหารจัดการเครือข่าย ThaiCleftLink ภาคเหนือ</p>
         </div>
-        
-        <div className="flex items-center gap-2 text-xs font-bold">
-           <span className="text-slate-400">STATUS:</span>
-           <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
-             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-             SYSTEM NORMAL
-           </span>
-        </div>
-      </div>
-
-      {/* Global Filters */}
-      <DashboardFilters />
-
-      {/* Quick Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="คำขอทุนรอพิจารณา" 
-          value={stats.funds.pending} 
-          subtitle="ต้องการการอนุมัติทันที" 
-          icon={<Briefcase size={20} />}
-          variant="teal"
-          trend="8 High Priority"
-        />
-        <StatCard 
-          title="ผู้ป่วยขาดนัด (Loss follow-up)" 
-          value={stats.appointments.noShow + "%"} 
-          subtitle="เสี่ยงต่อการขาดการรักษา" 
-          icon={<AlertCircle size={20} />}
-          variant="rose"
-          trend="+2 New Alerts"
-        />
-        <StatCard 
-          title="Tele-consult Network" 
-          value={stats.teleConsult.active} 
-          subtitle="เคสปรึกษาสำเร็จเดือนนี้" 
-          icon={<Video size={20} />}
-          variant="cyan"
-          trendUp={true}
-          trend="12% Growth"
-        />
-        <StatCard 
-          title="Case Manager ในระบบ" 
-          value="48" 
-          subtitle="บุคลากรผู้ประสานงาน" 
-          icon={<Users size={20} />}
-          variant="slate"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        
-        {/* Left Column: Priority Inbox */}
-        <div className="xl:col-span-2 space-y-6">
-          <ApprovalInbox />
-          <HomeVisitMonitoring />
-        </div>
-
-        {/* Right Column: Tracking & Pipeline */}
-        <div className="space-y-6">
-           <ReferralPipeline />
-           <AppointmentMonitoring />
-           
-           {/* Fund Distribution Chart */}
-           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-6">
-                <Activity className="text-teal-600" size={18} />
-                การกระจายงบประมาณ (Fund Distribution)
-              </h3>
-              <div className="h-[200px] w-full min-h-[200px] min-w-0" style={{ minHeight: '200px', height: '200px', width: '100%', minWidth: 0 }}>
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
-                  <BarChart data={fundDistributionData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                    <XAxis type="number" hide />
-                    <YAxis 
-                      dataKey="name" 
-                      type="category" 
-                      width={80} 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
-                    />
-                    <Tooltip 
-                      cursor={{ fill: '#f8fafc' }}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
-                      {fundDistributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Month Dropdown */}
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-[150px] bg-white border-gray-200 h-[38px] rounded-lg text-sm">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#7367f0]" />
+                <SelectValue placeholder="เลือกเดือน" />
               </div>
-              <button className="w-full mt-4 flex items-center justify-center gap-2 text-xs font-bold text-teal-600 hover:gap-3 transition-all">
-                VIEW FINANCIAL REPORT <ArrowRight size={14} />
-              </button>
-           </div>
-        </div>
+            </SelectTrigger>
+            <SelectContent>
+              {MONTHS.map(m => (
+                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
+          {/* Year Dropdown */}
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-[100px] bg-white border-gray-200 h-[38px] rounded-lg text-sm">
+              <SelectValue placeholder="เลือกปี" />
+            </SelectTrigger>
+            <SelectContent>
+              {YEARS.map(y => (
+                <SelectItem key={y} value={y}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-stretch md:items-center gap-3">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Filter size={14} className="text-[#7367f0]" />
+          <span>กรองข้อมูล:</span>
+        </div>
+        <Select value={provinceFilter} onValueChange={setProvinceFilter}>
+          <SelectTrigger className="w-[160px] h-10 border-gray-200 rounded-lg text-sm">
+            <div className="flex items-center gap-2"><MapPin size={14} className="text-[#7367f0]" /><SelectValue /></div>
+          </SelectTrigger>
+          <SelectContent>{PROVINCES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={hospitalFilter} onValueChange={setHospitalFilter}>
+          <SelectTrigger className="w-[200px] h-10 border-gray-200 rounded-lg text-sm">
+            <div className="flex items-center gap-2"><Building2 size={14} className="text-[#7367f0]" /><SelectValue /></div>
+          </SelectTrigger>
+          <SelectContent>{HOSPITALS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+        </Select>
+        {(provinceFilter !== 'ทั้งหมด' || hospitalFilter !== 'ทั้งหมด') && (
+          <Button variant="ghost" size="sm" className="text-[#7367f0] text-sm" onClick={() => { setProvinceFilter('ทั้งหมด'); setHospitalFilter('ทั้งหมด'); }}>
+            ล้างตัวกรอง
+          </Button>
+        )}
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {[
+          { label: 'ผู้ป่วย', value: stats.totalPatients, icon: Users, color: 'text-[#7367f0]', bg: 'bg-[#7367f0]/10' },
+          { label: 'เยี่ยมบ้าน', value: stats.totalVisits, icon: Home, color: 'text-[#28c76f]', bg: 'bg-[#28c76f]/10' },
+          { label: 'นัดหมาย', value: stats.totalAppointments, icon: Calendar, color: 'text-[#4285f4]', bg: 'bg-[#4285f4]/10' },
+          { label: 'ส่งตัว', value: stats.totalReferrals, icon: Send, color: 'text-[#ff6d00]', bg: 'bg-[#ff6d00]/10' },
+          { label: 'Tele-med', value: stats.totalTele, icon: Video, color: 'text-[#e91e63]', bg: 'bg-[#e91e63]/10' },
+          { label: 'ขอทุน', value: stats.totalFunds, icon: Coins, color: 'text-[#f5a623]', bg: 'bg-[#f5a623]/10' },
+        ].map((stat, i) => (
+          <Card key={i} className="border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-all">
+            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+              <div className={cn("p-2.5 rounded-xl", stat.bg)}>
+                <stat.icon className={cn("w-5 h-5", stat.color)} />
+              </div>
+              <p className={cn("text-2xl", stat.color)}>{stat.value}</p>
+              <p className="text-xs text-gray-500">{stat.label}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* System Overview Pie */}
+        <Card className="border-gray-100 shadow-sm rounded-xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-[#5e5873] flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-[#7367f0]" /> ภาพรวมระบบทั้งหมด
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div className="h-[240px] relative" style={{ minHeight: 240, minWidth: 240 }}>
+                <ResponsiveContainer width="100%" height={240} minWidth={0} debounce={50}>
+                  <PieChart>
+                    <Pie data={systemData} cx="50%" cy="50%" innerRadius={60} outerRadius={95} paddingAngle={5} dataKey="value" stroke="none">
+                      {systemData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                    </Pie>
+                    <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '12px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-sm text-gray-400">รายการทั้งหมด</span>
+                  <span className="text-3xl text-[#5e5873]">{systemData.reduce((s, d) => s + d.value, 0)}</span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {systemData.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                      <span className="text-sm text-gray-600">{item.name}</span>
+                    </div>
+                    <span className="text-sm text-[#5e5873]">{item.value} รายการ</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hospital Distribution Bar Chart */}
+        <Card className="border-gray-100 shadow-sm rounded-xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-[#5e5873] flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-[#7367f0]" /> ผู้ป่วยตามโรงพยาบาล
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[260px]" style={{ minWidth: 0, minHeight: 260 }}>
+              <ResponsiveContainer width="100%" height={260} debounce={50}>
+                <BarChart data={hospitalData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#888' }} />
+                  <YAxis tick={{ fontSize: 11, fill: '#888' }} allowDecimals={false} />
+                  <RechartsTooltip contentStyle={{ borderRadius: '8px', border: '1px solid #eee', fontSize: '12px' }} formatter={(val: any, _: any, props: any) => [`${val} ราย`, props.payload.fullName]} />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={28} fill={PURPLE.primary} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Province + Action Items Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Province Distribution */}
+        <Card className="border-gray-100 shadow-sm rounded-xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-[#5e5873] flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-[#7367f0]" /> ผู้ป่วยรายจังหวัด
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[220px] w-full min-w-0" style={{ minWidth: 0, minHeight: 220 }}>
+              <ResponsiveContainer width="100%" height={220} minWidth={0} debounce={50}>
+                <BarChart data={provinceData} layout="vertical" margin={{ left: 0, right: 10 }}>
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" width={75} axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                  <RechartsTooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '12px' }} />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={16}>
+                    {provinceData.map((_, idx) => <Cell key={idx} fill={idx === 0 ? '#7367f0' : idx === 1 ? '#9e95f5' : '#c4bffa'} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pending Approvals */}
+        <Card className="border-gray-100 shadow-sm rounded-xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-[#5e5873] flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-[#f5a623]" /> คำขอรอพิจารณา
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-[#f5a623]/5 rounded-lg border border-[#f5a623]/10">
+              <div className="flex items-center gap-2">
+                <Coins size={16} className="text-[#f5a623]" />
+                <span className="text-sm text-gray-600">ทุนรอพิจารณา</span>
+              </div>
+              <span className="text-[#f5a623]">{stats.pendingFunds} รายการ</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-[#4285f4]/5 rounded-lg border border-[#4285f4]/10">
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-[#4285f4]" />
+                <span className="text-sm text-gray-600">นัดหมายรอยืนยัน</span>
+              </div>
+              <span className="text-[#4285f4]">{stats.pendingAppts} รายการ</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* CM Overview */}
+        <Card className="border-gray-100 shadow-sm rounded-xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-[#5e5873] flex items-center gap-2">
+              <Users className="w-5 h-5 text-[#7367f0]" /> Case Manager
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {CASE_MANAGER_DATA.slice(0, 4).map(cm => (
+              <div key={cm.id} className="flex items-center gap-3">
+                
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-[#5e5873] truncate block">{cm.name}</span>
+                  <span className="text-xs text-gray-400">{cm.patientCount} ผู้ป่วย</span>
+                </div>
+                <span className={cn("w-2 h-2 rounded-full shrink-0",
+                  cm.status === 'active' ? "bg-[#28c76f]" : cm.status === 'leave' ? "bg-[#ff9f43]" : "bg-[#EA5455]"
+                )}></span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity Feed */}
+        <Card className="border-gray-100 shadow-sm rounded-xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-[#5e5873] flex items-center gap-2">
+              <Activity className="w-5 h-5 text-[#7367f0]" /> กิจกรรมล่าสุด
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative pl-6 border-l-2 border-gray-100 space-y-4 ml-1">
+              {[
+                { label: 'เยี่ยมบ้านเสร็จสิ้น 2 รายการ', time: 'วันนี้ 14:30', color: 'bg-[#28c76f]' },
+                { label: 'อนุมัติทุนสงเคราะห์ 1 ราย', time: 'วันนี้ 10:00', color: 'bg-[#f5a623]' },
+                { label: 'ส่งตัวผู้ป่วยใหม่ 1 ราย', time: 'เมื่อวาน', color: 'bg-[#ff6d00]' },
+                { label: 'Tele-med สำเร็จ 3 เซสชัน', time: '2 วันที่แล้ว', color: 'bg-[#e91e63]' },
+              ].map((act, i) => (
+                <div key={i} className="relative">
+                  <div className={cn("absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full ring-3 ring-white", act.color)}></div>
+                  <p className="text-sm text-[#5e5873]">{act.label}</p>
+                  <p className="text-xs text-gray-400">{act.time}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

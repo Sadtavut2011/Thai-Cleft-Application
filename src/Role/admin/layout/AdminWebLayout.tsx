@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminSidebar from './AdminSidebar';
-import { WebHeader } from './WebHeader';
+import WebHeader from '../../../components/shared/WebHeader';
 
 interface AdminWebLayoutProps {
   children: React.ReactNode;
@@ -10,16 +10,17 @@ interface AdminWebLayoutProps {
 
 export default function AdminWebLayout({ children, activePage, onNavigate }: AdminWebLayoutProps) {
   return (
-    <div className="flex h-screen bg-[#F1F5F9] font-['IBM_Plex_Sans_Thai'] overflow-hidden">
+    <div className="flex h-screen bg-[#F8F8F8] font-['IBM_Plex_Sans_Thai'] overflow-hidden">
       {/* Sidebar */}
       <AdminSidebar activePage={activePage} onNavigate={onNavigate} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
         {/* Top Header */}
-        <div className="sticky top-0 z-30 w-full px-4 pt-4 md:px-8">
+        <div className="sticky top-0 z-30 p-[10px] bg-[#F8F8F8]">
           <WebHeader 
-            onNavigate={(page) => console.log('Navigate to:', page)} 
+            onProfileClick={() => onNavigate?.("ข้อมูลส่วนตัว")} 
+            onNotificationClick={() => console.log('Notification Clicked')} 
           />
         </div>
 

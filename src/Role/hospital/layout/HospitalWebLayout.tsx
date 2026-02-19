@@ -1,6 +1,6 @@
 import React from 'react';
 import HospitalSidebar from './HospitalSidebar';
-import DashboardTopBar from '@/components/shared/DashboardTopBar';
+import WebHeader from '@/components/shared/WebHeader';
 
 interface HospitalWebLayoutProps {
   children: React.ReactNode;
@@ -8,15 +8,15 @@ interface HospitalWebLayoutProps {
 
 export default function HospitalWebLayout({ children }: HospitalWebLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex font-['IBM_Plex_Sans_Thai']">
+    <div className="min-h-screen bg-[#F8F8F8] flex font-['IBM_Plex_Sans_Thai']">
       {/* Fixed Sidebar */}
       <HospitalSidebar />
 
       {/* Main Content Area */}
       <div className="flex-1 ml-[280px] flex flex-col min-w-0">
         {/* Top Header */}
-        <div className="sticky top-0 z-30">
-          <DashboardTopBar 
+        <div className="sticky top-0 z-30 p-[10px] bg-[#F8F8F8]">
+          <WebHeader 
             onProfileClick={() => console.log('Profile Clicked')} 
             onNotificationClick={() => console.log('Notification Clicked')} 
           />
